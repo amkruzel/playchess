@@ -1,0 +1,37 @@
+<script lang="ts">
+  import { slide } from "svelte/transition"
+
+  import NewGame from "./Containers/NewGame.svelte"
+  import LoadGame from "./Containers/LoadGame.svelte"
+
+  import { activeForm } from "./stores"
+
+  export let isFormValid: boolean
+
+  let isNewGameFormValid
+  let isLoadGameFormValid
+
+  $: isFormValid = isNewGameFormValid || isLoadGameFormValid
+
+</script>
+
+<div class="form-overflow-container">
+  {#if $activeForm === 'newgame'}
+    <NewGame bind:isNewGameFormValid />
+  {:else if $activeForm === 'loadgame'}
+    <LoadGame bind:isLoadGameFormValid />
+  {/if}
+  
+</div>
+
+<style>
+  .form-overflow-container {
+    position: relative;
+    overflow: hidden;
+    margin-left: auto;
+    margin-right: auto;
+    width: 500px;
+    height: min-content;
+    transition: height 500ms;
+  }
+</style>
