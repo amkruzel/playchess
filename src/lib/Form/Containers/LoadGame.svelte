@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { onDestroy } from "svelte";
+  import { slide, fly } from "svelte/transition"
   import { HAS_LOCAL_SAVED_GAMES } from "../../../stores"
 
   import { activeLoadGameID, pendingGameToLoad } from "../stores"
@@ -33,10 +35,12 @@
     isLoadGameFormValid = savedGamesJSON.filter(g => g.id === $activeLoadGameID).length === 1
     $pendingGameToLoad = savedGamesJSON.find(g => g.id === $activeLoadGameID)
   }
+
+  onDestroy(() => activeLoadGameID.set(null))
   
 </script>
 
-<div class="load-container">
+<div in:fly="{{x: 200}}" out:fly="{{x: 200}}" class="load-container">
   {#if !$HAS_LOCAL_SAVED_GAMES}
     <div>
       <h2>There are no games saved locally. Sign in to search for games saved to your account.</h2>
@@ -63,6 +67,11 @@
 </div>
 
 <style>
+  .load-container {
+    grid-column: 1/2;
+    grid-row: 1/2;
+  }
+
   .games-list {
     display: grid;
     gap: 10px;

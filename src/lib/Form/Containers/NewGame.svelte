@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { slide } from "svelte/transition"
+  import { slide, fly } from "svelte/transition"
+  import { onDestroy, onMount } from "svelte"
 
   import { activeForm
          , opponent
@@ -8,7 +9,23 @@
          , whitePlayerName
          , blackPlayerName } from "../stores"
 
+  import { currentUser } from "../../../pocketbase";
+
   export let isNewGameFormValid: boolean = false
+
+  let currentUserHasFriends: boolean = false
+
+  currentUser.subscribe(user => {
+    currentUserHasFriends = user?.friends.length > 0
+  })
+
+  function clearAllFields() {
+    localOrOnline.set(null)
+    whitePlayerName.set(null)
+    blackPlayerName.set(null)
+    color.set(null)
+    opponent.set(null)
+  }
 
   const evalForm = () => {
     let status = false
@@ -32,9 +49,10 @@
     isNewGameFormValid = status
   }
 
+  onDestroy(() => clearAllFields())
 </script>
 
-<form in:slide out:slide class="new-game-form" data-name="newgameform">
+<form in:fly="{{x: -200}}" out:fly="{{x: -200}}" class="new-game-form" data-name="newgameform">
   <fieldset class="form-item radio" data-form-item="opponent">
     <legend>
       Do you want to play against a computer or another player?
@@ -50,6 +68,22 @@
   </fieldset>
 
   {#if $opponent === 'player'}
+    <fieldset in:slide out:slide class="form-item radio" >
+      <legend>
+        Do you want to play online or locally?
+      </legend>
+      <div>
+        <input bind:group={$localOrOnline} on:change={evalForm} type="radio" name="online-or-local" value="online" data-online-required="true" id="online" disabled="{currentUserHasFriends ? false : true }">
+        <label for="online" id="online">Online</label>
+      </div>
+      <div>
+        <input bind:group={$localOrOnline} on:change={evalForm} type="radio" name="online-or-local" value="local" id="local">
+        <label for="local" id="local">Local</label>
+      </div>
+    </fieldset>
+  {/if}
+
+  {#if $localOrOnline === 'online'} 
     <fieldset in:slide out:slide>
       <legend>
         Enter the name of each player:
@@ -63,21 +97,6 @@
         <input bind:value={$blackPlayerName} on:change={evalForm} type="text" name="player-color-names-black" id="black-name" minlength="4" maxlength="20" required>
       </div>
     </fieldset>
-
-    <fieldset in:slide out:slide class="form-item radio" >
-      <legend>
-        Do you want to play online or locally?
-      </legend>
-      <div>
-        <input bind:group={$localOrOnline} on:change={evalForm} type="radio" name="online-or-local" value="online" data-online-required="true" id="online">
-        <label for="online" id="online">Online</label>
-      </div>
-      <div>
-        <input bind:group={$localOrOnline} on:change={evalForm} type="radio" name="online-or-local" value="local" id="local">
-        <label for="local" id="local">Local</label>
-      </div>
-    </fieldset>
-
   {/if}
 
   {#if $opponent === 'computer'}
@@ -105,5 +124,8 @@
 </form>
 
 <style>
-
+  form {
+    grid-column: 1/2;
+    grid-row: 1/2;
+  }
 </style>

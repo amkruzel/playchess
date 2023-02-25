@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { slide } from "svelte/transition"
-
   import NewGame from "./Containers/NewGame.svelte"
   import LoadGame from "./Containers/LoadGame.svelte"
 
@@ -11,7 +9,8 @@
   let isNewGameFormValid
   let isLoadGameFormValid
 
-  $: isFormValid = isNewGameFormValid || isLoadGameFormValid
+  $: isFormValid = (isNewGameFormValid && $activeForm === 'newgame') 
+                || (isLoadGameFormValid && $activeForm === 'loadgame')
 
 </script>
 
@@ -32,6 +31,6 @@
     margin-right: auto;
     width: 500px;
     height: min-content;
-    transition: height 500ms;
+    display: grid;
   }
 </style>

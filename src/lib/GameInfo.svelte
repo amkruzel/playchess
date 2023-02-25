@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from "svelte"
+  import { capitalize } from "../common";
 
   import { CURRENT_GAME } from "../stores"
   //import Piece from "./ChessBoard/Piece.svelte";
@@ -8,74 +9,65 @@
   $: currentPlayerDisplayName = $CURRENT_GAME[`${currentPlayerColor}Player`]
 
   $: moves = $CURRENT_GAME.previousMoves
-
-  const getPiecesOfOneColor = (moves: chessMove[], color: color): Piece[] => {
-    return moves.map(m => m.pieceCaptured).filter(p => p.color === color)
-  }
-
-  const piecePointValue = (p: Piece) => {
-    if (p.name === 'queen') return 9
-    if (p.name === 'rook') return 5
-    if (p.name === 'bishop') return 3
-    if (p.name === 'knight') return 3
-    return 1
-  }
-
-  // Queen, Rook Bishop, Knight, Pawn
-  const sortPiecesInDisplayOrder = (pieces: Piece[]): Piece[] => {
-    return pieces.sort((a, b) => {
-      const [aPt, bPt] = [piecePointValue(a), piecePointValue(b)]
-      if (aPt > bPt) return -1
-      if (bPt > aPt) return 1
-      if (a.name === b.name) return 0
-      return a.name === 'bishop' ? -1 : 1
-    })
-  }
-
-  let whiteCapturedPieces: Piece[] = []
-  let blackCapturedPieces: Piece[] = []
-  
-  onMount(() => {
-    whiteCapturedPieces = sortPiecesInDisplayOrder(getPiecesOfOneColor(moves, 'white'))
-    blackCapturedPieces = sortPiecesInDisplayOrder(getPiecesOfOneColor(moves, 'black'))
-  })
   
 </script>
 
-<div>
-  <div class="current-player-container">
-    <h2>Current Player:</h2>
-    <div class="current-player">
-      {currentPlayerDisplayName ?? currentPlayerColor}
-    </div>
-  </div>
-
-  <div class="turns-list-container">
-    <h2>Previous Moves:</h2>
-    <div class="moves-container">
-      <div class="captured-pieces-container">
-        <div class="white">
-          {#each whiteCapturedPieces as piece}
-            {piece}
-          {/each}
-
-          {#each blackCapturedPieces as piece}
-            <!--<Piece {piece} />-->
-          {/each}
-        </div>
+<article>
+  <div>
+    <hgroup class="current-player-container">
+      <h2>Current Player:</h2>
+      <div class="current-player">
+        {currentPlayerDisplayName ?? capitalize(currentPlayerColor)}
       </div>
-    </div>
+    </hgroup>
+
+    <hgroup class="turns-list-container">
+      <h2>Previous Moves:</h2>
+      <div class="moves-container">
+        {#each moves as move}
+          <div class="move container">
+            <b>Move {move.moveNumber}</b>
+            <span>{capitalize(move.pieceMoved.color)} {move.pieceMoved.name} {move.from} to {move.to}</span>
+            {#if (move.pieceCaptured)} {capitalize(move.pieceCaptured.color)} {move.pieceCaptured.name} captured {/if}
+          </div>
+        {/each}
+      </div>
+    </hgroup>
+    
   </div>
-  
-</div>
+</article>
 
 <style>
+  article {
+    min-width: 330px;
+    max-height: 660px;
+  }
+
+  hgroup {
+    padding-left: 10px;
+  }
+
   div {
     padding: 20px;
-    max-width: 300px;
+  }
+
+  .move, .moves-container, .current-player {
+    padding: 0;
+  }
+
+  .moves-container {
+    display: grid;
+    gap: 15px;
+    overflow-y: auto;
+    max-height: 400px;
+  }
+
+  .move {
+    display: grid;
   }
 
   .current-player {
     font-size: 24px;
   }
+
 </style>

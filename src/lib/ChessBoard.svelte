@@ -8,9 +8,11 @@
 
   import Square from "./ChessBoard/Square.svelte"
 
+  import audioURL from '../assets/place-piece.wav'
+
   export let game
 
-  const clickAudio = new Audio(`${mediaFolder}place-piece.wav`)
+  const clickAudio = new Audio(audioURL)
 
   // board locations, in order from top-left to bottom-right
   const whiteLocations: location[] = [ 'a8', 'b8', 'c8', 'd8', 'e8', 'f8', 'g8', 'h8'
@@ -36,7 +38,11 @@
   
   function handleClick(e) {
     const clickTarget = e.target as HTMLElement
+    
     const squareTarget: Maybe<HTMLElement> = clickTarget?.tagName !== 'DIV' ? clickTarget?.parentElement : clickTarget
+
+    console.log(squareTarget, $CURRENT_GAME)
+      
 
     if (squareTarget === null) return clearLocations()
 
@@ -92,13 +98,20 @@
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
-<div on:click={handleClick} class="board-container">
-  {#each locationsList as loc}
-    <Square location={loc} validSquare={possibleLocations.includes(loc)} {game} />
-  {/each}
-</div>
+<article>
+  <div on:click={handleClick} class="board-container">
+    {#each locationsList as loc}
+      <Square location={loc} validSquare={possibleLocations.includes(loc)} {game} />
+    {/each}
+  </div>
+</article>
+
 
 <style>
+  article {
+    grid-column: span 2;
+  }
+  
   .board-container {
     padding: 50px;
     width: 620px;

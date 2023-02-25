@@ -1,17 +1,15 @@
-* {
-  font-family: 'Playfair Display', serif;
-  
-  --white-color: #fffdfd;
-
+:root {
   --light-square-color: #ffce9e;
   --dark-square-color: #d08a45;
-  
-  --blue-background: #016fb9;
-  --blue-background-light: #20a5fe;
-  --dark-blue: #03045e;
 }
 
-/* Defaults */
+* {
+  font-family: 'Nanum Gothic', sans-serif;
+}
+
+html {
+  width: 100%;
+}
 
 body {
   margin: 0;
@@ -19,47 +17,11 @@ body {
   position: relative;
 }
 
-button {
-  padding: 12px;
-  background: linear-gradient(#1979ff, var(--blue-background));
-  border: none;
-  font-size: 20px;
-  color: var(--white-color);
-}
-
-button:hover {
-  cursor: pointer;
-  background-color: #90e0ef;
-  color: var(--white-color);
-}
-
 header {
-  background-color: var(--blue-background);
-  color: var(--white-color);
   display: grid;
   grid-auto-flow: column;
-  box-shadow: 0px 2px 15px 2px #003151;
   place-items: center;
-  height: 100px;
+  border-bottom: 1px solid var(--primary);
 
   grid-template-columns: 320px auto;
-
-}
-
-.sign-in-container {
-  padding: 0px 30px;
-}
-
-footer {
-  font-size: 12px;
-  position: sticky;
-  bottom: 0;
-  width: 98%;
-  text-align: center;
-  margin: 10px;
-}
-
-.hidden {
-  display: none;
-  visibility: hidden;
 }

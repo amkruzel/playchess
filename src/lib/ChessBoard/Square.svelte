@@ -24,7 +24,7 @@
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
-<div data-location="{location}" class="{LightSquares.includes(location) ? 'light' : ''} square">
+<div data-location="{location}" id="{LightSquares.includes(location) ? 'light' : ''}" class="square">
   {#if validSquare}
     <span></span>
   {/if}
@@ -39,18 +39,19 @@
     border-radius: 100%;
     background-color: rgba(0, 0, 0, 0.26);
     filter: brightness(1.2);
+    position: absolute;
   }
 
   .square {
     display: grid;
     place-items: center;
+    background-color: var(--dark-square-color) !important;
+
   }
 
-  .square[class~="light"] {
-    background-color: var(--light-square-color);
+  .square#light {
+    background-color: var(--light-square-color) !important;
   }
 
-  .square:not([class~="light"]) {
-    background-color: var(--dark-square-color);
-  }
+  
 </style>

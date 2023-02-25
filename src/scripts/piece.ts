@@ -4,7 +4,6 @@
  * 
  */
 
-import { logError } from "./error"
 import { flipBoardAndPieces } from "./board"
 import { algebraicToNum, numToAlgebraic, isError, flipLocation, logModelError } from "./common"
 
@@ -203,7 +202,6 @@ class ChessPiece {
       name: "Invalid move",
       message: "The move is invalid because the piece that is trying to be moved in invalid." 
     }
-    logError(error)
     return error
   }
 
@@ -278,7 +276,6 @@ class ChessPiece {
       
       if (isError(c)) { // this error will occur if the location of the piece passed to this function does
                         // not have the same piece in the board object
-        logError(c)
         return false
       }
 
@@ -382,13 +379,6 @@ class ChessPiece {
         }
       }
     }
-
-    // we should never reach here, so log an error and return false
-    logError( {
-      name: "Integrity error", 
-      message: `Unaccessible code reached - ${p.name} at ${p.location} reached the end of the isValidHorizMove function.`
-    } )
-
     return false
   }
 

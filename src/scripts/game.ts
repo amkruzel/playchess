@@ -4,12 +4,11 @@
  * 
  */
 
-import { logError } from "./error"
 import { copyBoard, newBoard } from "./board"
 import { algebraicToNum, delay, isError, logModelError, numToAlgebraic, parseLocationToAlg, parseLocationToCoords } from "./common"
 import { ChessPiece, copyPiece, isRook } from "./piece"
 import { isPawn } from "./piece"
-import { CURRENT_GAME } from "../stores"
+import { CURRENT_GAME, IS_CHECKMATE } from "../stores"
 
 // Functions for the Game type
 
@@ -74,6 +73,7 @@ const copyGame = (game: Game): Game => {
          , removedPieces: game.removedPieces
          , whitePlayer: game.whitePlayer
          , blackPlayer: game.blackPlayer
+         , winner: game.winner
          , swapPlayers: swapPlayersGame
          , getPiece: getPieceGame 
          , removePiece: removePieceGame }
@@ -97,7 +97,6 @@ class ChessGame {
     , message: "The square you tried to move from does not contain a piece." }
 
     if (piece === null) {
-      logError(error)
       return error
     }
 
@@ -124,7 +123,14 @@ class ChessGame {
 
     game.currentBoard[newX][newY] = copyPiece(piece)
     game.currentBoard[oldX][oldY] = null    
-    
+
+    /*
+    // need to check for checkmate
+    if (ChessGame.isKingInCheckmate(game, game.currentPlayerColor)) {
+      IS_CHECKMATE.set(true)
+      game.winner = game.currentPlayerColor === 'white' ? 'black' : 'white'
+    }
+    */
     game.needsCleanup = doCleanup
 
     return null
@@ -139,7 +145,6 @@ class ChessGame {
       }
     }
     const error = { name: "No King", message: "There is no King of the specified color on the board." }
-    logError(error)
     return error
   }
 
@@ -214,7 +219,6 @@ class ChessGame {
     const bd = "currentBoard" in gameOrBoard ? gameOrBoard.currentBoard : gameOrBoard
 
     if (bd[x][y] === undefined) {
-      logError({name: "Object undefined", message: `Location ${loc} on the chess board object was undefined.`})
       return false
     }
     return bd[x][y] === null
@@ -312,7 +316,6 @@ class ChessGame {
     const ret = game.getPiece([newX, (newY > curY) ? 7 : 0])
 
     if (ret === null || !isRook(ret)) {
-      logError({ name: "Invalid assumptions" })
       return null
     }
     return ret
