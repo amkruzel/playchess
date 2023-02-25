@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { onMount } from "svelte";
   import SettingsDropdown from "./SettingsDropdown.svelte";
 
   let isDropdownOpen: boolean

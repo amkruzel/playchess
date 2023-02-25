@@ -9,7 +9,7 @@
   import { currentMenu } from "./stores"
   import ChevronLeftIcon from "./Icons/ChevronLeftIcon.svelte";
   import FriendsSearch from "./FriendsSearch.svelte";
-  import { onDestroy, onMount } from "svelte";
+
 </script>
 
 <article class="dropdown">
@@ -41,20 +41,33 @@
     </div>
   
   {:else if $currentMenu === 'profile'}
-    <div in:fly={{x: 350}} out:fly={{x: 350}} class="profile-menu">
+
+    <div 
+      in:fly|local={{x: 350}} 
+      out:fly|local={{x: 350}} 
+      class="profile-menu">
+
       <DropdownItem>
         <ChevronLeftIcon slot="leftIcon" />
       </DropdownItem>
       <DropdownItem text="Sign Out" />
     </div>
+
   {:else if $currentMenu === 'friends'}
-    <div in:fly={{x: 350}} out:fly={{x: 350}} class="friends-menu">
+
+    <div 
+      in:fly|local={{x: 350}} 
+      out:fly|local={{x: 350}}
+      class="friends-menu">
+
       <DropdownItem>
         <ChevronLeftIcon slot="leftIcon" />
       </DropdownItem>
       <FriendsSearch />
     </div>
+
   {/if}
+
 </article>
 
 <style>
