@@ -9,13 +9,17 @@
   import { currentMenu } from "./stores"
   import ChevronLeftIcon from "./Icons/ChevronLeftIcon.svelte";
   import FriendsSearch from "./FriendsSearch.svelte";
-
+  import { onDestroy, onMount } from "svelte";
 </script>
 
 <article class="dropdown">
   {#if $currentMenu === 'default' || $currentMenu === null}
     
-    <div in:fly={{x: -350}} out:fly={{x: -350}} class="orig-menu">
+    <div 
+      in:fly|local={{x: -350}} 
+      out:fly|local={{x: -350}} 
+      class="orig-menu">
+
       {#if $currentUser}
         <DropdownItem text="{$currentUser.username}">
           <ChevronRightIcon slot="rightIcon" />

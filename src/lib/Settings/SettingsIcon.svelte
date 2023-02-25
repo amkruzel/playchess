@@ -1,7 +1,9 @@
 <script lang="ts">
+  import { onMount } from "svelte";
   import SettingsDropdown from "./SettingsDropdown.svelte";
 
   let isDropdownOpen: boolean
+
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->

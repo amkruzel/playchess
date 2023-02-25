@@ -1,7 +1,7 @@
 <script lang="ts">
   import { copyPiece } from "../scripts/piece";
   import { CURRENT_GAME } from "../stores"
-  import Piece from "./ChessBoard/Piece.svelte";
+  //import Piece from "./ChessBoard/Piece.svelte";
 
   $: moves = $CURRENT_GAME.previousMoves
 
