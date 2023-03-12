@@ -1,10 +1,10 @@
-type Maybe<T> = NonNullable<T> | null
+export type Maybe<T> = NonNullable<T> | null
 
-type color = 'white' | 'black'
+export type color = 'white' | 'black'
 
-type name = 'pawn' | 'bishop' | 'knight' | 'rook' | 'king' | 'queen'
+export type name = 'pawn' | 'bishop' | 'knight' | 'rook' | 'king' | 'queen'
 
-type promotionName = 'bishop' | 'knight' | 'rook' | 'queen'
+export type promotionName = 'bishop' | 'knight' | 'rook' | 'queen'
 
 // prettier-ignore
 export type location = 'a1' | 'a2' | 'a3' | 'a4' | 'a5' | 'a6' | 'a7' | 'a8'
@@ -16,16 +16,16 @@ export type location = 'a1' | 'a2' | 'a3' | 'a4' | 'a5' | 'a6' | 'a7' | 'a8'
               | 'g1' | 'g2' | 'g3' | 'g4' | 'g5' | 'g6' | 'g7' | 'g8'
               | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'h7' | 'h8'
 
-type gamestatus = 'active' | 'inactive'
+export type gamestatus = 'active' | 'inactive'
 
-type gametype = 'player' | 'computer'
+export type gametype = 'player' | 'computer'
 
-type gamelocation = 'local' | 'online'
+export type gamelocation = 'local' | 'online'
 
 // This is used to limit the coords type
-type idxLimit = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7
+export type idxLimit = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7
 
-type coords = [idxLimit, idxLimit]
+export type coords = [idxLimit, idxLimit]
 
 /**
  * A Chess Move
@@ -56,9 +56,9 @@ export type Move = {
   }
 }
 
-type Board = Maybe<Piece>[][]
+export type Board = Maybe<Piece>[][]
 
-type Info = {
+export type Info = {
   move: number
   clientID: number
   serverID?: string

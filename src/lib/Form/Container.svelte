@@ -1,17 +1,17 @@
 <script lang="ts">
-  import NewGame from "./Containers/NewGame.svelte"
-  import LoadGame from "./Containers/LoadGame.svelte"
+  import NewGame from './Containers/NewGame.svelte'
+  import LoadGame from './Containers/LoadGame.svelte'
 
-  import { activeForm } from "./stores"
+  import { activeForm } from './stores'
 
   export let isFormValid: boolean
 
-  let isNewGameFormValid
-  let isLoadGameFormValid
+  let isNewGameFormValid: boolean
+  let isLoadGameFormValid: boolean
 
-  $: isFormValid = (isNewGameFormValid && $activeForm === 'newgame') 
-                || (isLoadGameFormValid && $activeForm === 'loadgame')
-
+  $: isFormValid =
+    (isNewGameFormValid && $activeForm === 'newgame') ||
+    (isLoadGameFormValid && $activeForm === 'loadgame')
 </script>
 
 <div class="form-overflow-container">
@@ -20,7 +20,6 @@
   {:else if $activeForm === 'loadgame'}
     <LoadGame bind:isLoadGameFormValid />
   {/if}
-  
 </div>
 
 <style>

@@ -1,21 +1,32 @@
 <script lang="ts">
-  import { STATE, HAS_LOCAL_SAVED_GAMES, CURRENT_GAME, COLOR_SCHEME, SHOW_NON_DISRUPTIVE_POPUP } from '../stores'
+  import {
+    STATE,
+    HAS_LOCAL_SAVED_GAMES,
+    CURRENT_GAME,
+    COLOR_SCHEME,
+    SHOW_NON_DISRUPTIVE_POPUP,
+  } from '../stores'
   import { currentUser, pb } from '../pocketbase'
 
-  import { setColorScheme } from '../common';
-  import AboutModal from './AboutModal.svelte';
-  import SettingsIcon from './Settings/SettingsIcon.svelte';
-  import { newGame } from '../scripts/game';
+  import { setColorScheme } from '../common'
+  import AboutModal from './AboutModal.svelte'
+  import SettingsIcon from './Settings/SettingsIcon.svelte'
+
+  import type { Maybe, Game } from '../scripts/chess'
+  import GameInfo from './GameInfo.svelte'
 
   let isAboutModalOpen: boolean = false
 
   function clickFormButton(formName: string) {
-    const btn = document.querySelector(`[data-name="${formName}game"]`) as Maybe<HTMLButtonElement>
+    const btn = document.querySelector(
+      `[data-name="${formName}game"]`
+    ) as Maybe<HTMLButtonElement>
     btn?.click()
   }
 
   async function tryToSaveGame(): Promise<[number | null, string]> {
-    if ($CURRENT_GAME.currentMoveNumber === 1) return [-2, 'The game was not saved because no moves had been made.']
+    if ($CURRENT_GAME?.info.move === 1)
+      return [-2, 'The game was not saved because no moves had been made.']
     saveGameToLocalStorage()
     return await saveGameToDB()
   }
@@ -24,22 +35,29 @@
    * first string is a possible error message. null if there were no errors
    */
   function saveGameToLocalStorage() {
+    if (!$CURRENT_GAME) return
+
     // A list of the games saved in localStorage
-    const gamesList: Game[] = $HAS_LOCAL_SAVED_GAMES ? JSON.parse(localStorage.getItem('savedGames')) : []
+    const gamesList: Game[] = $HAS_LOCAL_SAVED_GAMES
+      ? JSON.parse(localStorage.getItem('savedGames') as string)
+      : []
 
     // A list to hold the new list of games to go in localStorage, starting with the current game
     let newGamesList: Game[] = [$CURRENT_GAME]
 
     // A list of the game IDs (so that we don't store duplicate games)
-    let gameIDs: number[] = [$CURRENT_GAME.id]
+    let gameIDs: number[] = [$CURRENT_GAME.info.clientID]
     gamesList.forEach(game => {
-      // The game must not be the current game and must also not have already 
+      // The game must not be the current game and must also not have already
       // been saved (this should not be possible anyway)
-      if (game.id !== $CURRENT_GAME.id && !gameIDs.find(el => el === game.id)) {
+      if (
+        game.info.clientID !== $CURRENT_GAME?.info.clientID &&
+        !gameIDs.find(el => el === game.info.clientID)
+      ) {
         newGamesList.push(game)
-        gameIDs.push(game.id)
+        gameIDs.push(game.info.clientID)
       }
-    })        
+    })
     localStorage.setItem('savedGames', JSON.stringify(newGamesList))
     localStorage.setItem('hasSavedGames', 'true')
     HAS_LOCAL_SAVED_GAMES.set(true)
@@ -48,54 +66,62 @@
   /**
    * If this is being called to save a new multiplayer game,
    * $CURRENT_GAME must be initialized first
-   * 
+   *
    */
   async function saveGameToDB(): Promise<[number | null, string]> {
-    if (!$currentUser) return [-1, "No user logged in."]
+    if (!$currentUser) return [-1, 'No user logged in.']
+    if (!$CURRENT_GAME) return [-1, 'No current game.']
 
-    let returnMessage = "Your game has been saved to your account."
+    let returnMessage = 'Your game has been saved to your account.'
     let returnCode: null | number = null // null if it was successful, number for any error
 
     const currentGameString = JSON.stringify($CURRENT_GAME)
-    const gameDB = $CURRENT_GAME.type === 'computer' ? 'singleplayerGames' : 'multiplayerGames'
+    const gameDB =
+      $CURRENT_GAME.info.type === 'computer'
+        ? 'singleplayerGames'
+        : 'multiplayerGames'
 
     // Here we are searching for an existing record for this game. If one exists, we update it
     // in the try block. If one doesn't exist, we create it in the catch block.
     try {
-      const gameRecord = await pb.collection(gameDB).getFirstListItem(`gameID=${$CURRENT_GAME.id}`)
-      await pb.collection(gameDB).update(gameRecord.id, { 'game': currentGameString } )
+      const gameRecord = await pb
+        .collection(gameDB)
+        .getFirstListItem(`gameID=${$CURRENT_GAME.info.clientID}`)
+      await pb
+        .collection(gameDB)
+        .update(gameRecord.id, { game: currentGameString })
     } catch (err) {
-      if (err.status === 404) { // this means the game doesn't exist and we need to create it
+      if (err.status === 404) {
+        // this means the game doesn't exist and we need to create it
 
         let newGameObj
+        const gameInfo = $CURRENT_GAME.info
 
         if (gameDB === 'multiplayerGames') {
-          
           // for creating a new multiplayer game
           newGameObj = {
-            'game': currentGameString,
-            'gameID': $CURRENT_GAME.id,
-            'white': $CURRENT_GAME.whitePlayer,
-            'black': $CURRENT_GAME.blackPlayer,
+            game: currentGameString,
+            gameID: gameInfo.clientID,
+            white: gameInfo.white,
+            black: gameInfo.black,
           }
         } else {
-
-          // for creating a new singleplayer game          
+          // for creating a new singleplayer game
           newGameObj = {
-            'game': currentGameString,
-            'gameID': $CURRENT_GAME.id,
-            'player': $currentUser.id,
-            'color': $CURRENT_GAME.playerViewColor
+            game: currentGameString,
+            gameID: gameInfo.clientID,
+            player: $currentUser.id,
+            color: gameInfo.playerColor,
           }
         }
 
         try {
           await pb.collection(gameDB).create(newGameObj)
         } catch (err) {
-          [returnCode, returnMessage] = [err.status, err.message]
+          ;[returnCode, returnMessage] = [err.status, err.message]
         }
       } else {
-        [returnCode, returnMessage] = [err.status, err.message]
+        ;[returnCode, returnMessage] = [err.status, err.message]
       }
     }
     return [returnCode, returnMessage]
@@ -114,8 +140,11 @@
       if (target.classList.contains('load-game')) clickFormButton('load')
     }
 
-    if ($STATE.endsWith('game')) {
-      if (target.classList.contains('load-game') || target.classList.contains('new-game')) {        
+    if (typeof $STATE === 'string' && $STATE.endsWith('game')) {
+      if (
+        target.classList.contains('load-game') ||
+        target.classList.contains('new-game')
+      ) {
         const [errCode, msg] = await tryToSaveGame()
 
         // User is not logged in
@@ -125,17 +154,18 @@
 
         // New game - do not save
         if (errCode === -2) SHOW_NON_DISRUPTIVE_POPUP.set(msg)
-
         // Game successfully saved to PB
         else if (errCode === null) {
-          SHOW_NON_DISRUPTIVE_POPUP.set('Previous game has been saved to user account')
+          SHOW_NON_DISRUPTIVE_POPUP.set(
+            'Previous game has been saved to user account'
+          )
         }
 
         // There was a 4## error
         else if (errCode.toString().startsWith('4')) {
           SHOW_NON_DISRUPTIVE_POPUP.set(`
             The previous game has been saved locally but was unable to be 
-            saved to your account. Error ${errCode} - ${msg}.` )
+            saved to your account. Error ${errCode} - ${msg}.`)
         }
 
         // Any other errors
@@ -143,11 +173,11 @@
           SHOW_NON_DISRUPTIVE_POPUP.set(`
             The previous game has been saved locally but was unable to be 
             saved to your account. An error has been logged for an 
-            administrator to follow-up.` )
+            administrator to follow-up.`)
         }
 
         STATE.set('form')
-        clickFormButton(target.dataset.name)
+        clickFormButton(target.dataset.name ?? '')
       }
 
       if (target.classList.contains('save-game')) {
@@ -155,12 +185,14 @@
 
         // -1 is the error code if a user isn't signed in
         if (saveCode !== null && saveCode !== -1) alert(saveMessage)
-        else alert ('Game has been saved locally.')
+        else alert('Game has been saved locally.')
       }
     }
   }
 
-  function handleColorSchemeClick() { setColorScheme() }
+  function handleColorSchemeClick() {
+    setColorScheme()
+  }
 
   /*
   function handleSignInClick(e) {
@@ -197,9 +229,8 @@
   }*/
 </script>
 
-
 <header class="container-fluid header">
-  <h2>Play Chess</h2> 
+  <h2>Play Chess</h2>
 
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   <div on:click={handleMenuClick} class="menu-container">
@@ -208,10 +239,10 @@
     <div class="save-game">Save Game</div>
     <div class="about">About</div>
     {#if isAboutModalOpen}
-      <AboutModal bind:isAboutModalOpen={isAboutModalOpen} />
+      <AboutModal bind:isAboutModalOpen />
     {/if}
   </div>
-  <div class="settings-icon-container">  
+  <div class="settings-icon-container">
     <SettingsIcon on:click />
   </div>
   <!--
@@ -248,7 +279,8 @@
     margin-bottom: 0;
   }
 
-  button, .c_sign-in-dropdown {
+  button,
+  .c_sign-in-dropdown {
     padding-top: 6px;
     padding-bottom: 6px;
   }
@@ -285,7 +317,7 @@
     color: var(--primary-hover);
     border-bottom: 3px solid var(--primary-inverse);
     padding-bottom: 12px;
-    cursor: pointer;  
+    cursor: pointer;
   }
 
   .c_sign-in-dropdown {
@@ -299,9 +331,8 @@
     scale: 1.05;
     transition: scale 100ms;
   }
-  
+
   .settings-icon-container {
     justify-self: end;
   }
-
 </style>

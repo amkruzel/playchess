@@ -1,8 +1,12 @@
-import { writable, type Writable } from "svelte/store"
+import { writable, type Writable } from 'svelte/store'
+import type { Game, Maybe } from './scripts/chess'
 
-export const STATE: Writable<Maybe<'form' | 'newgame' | 'loadgame'>> = writable('form')
+export const STATE: Writable<Maybe<'form' | 'newgame' | 'loadgame'>> =
+  writable('form')
 export const CURRENT_GAME: Writable<Maybe<Game>> = writable(null)
-export const HAS_LOCAL_SAVED_GAMES: Writable<boolean> = writable(!!localStorage.getItem('savedGames'))
+export const HAS_LOCAL_SAVED_GAMES: Writable<boolean> = writable(
+  !!localStorage.getItem('savedGames')
+)
 export const COLOR_SCHEME: Writable<Maybe<'light' | 'dark'>> = writable(null)
 export const SHOW_SIGN_IN_MODAL: Writable<boolean> = writable(false)
 export const SIGN_OUT_USER: Writable<boolean> = writable(false)

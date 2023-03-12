@@ -1,3 +1,6 @@
-import { writable, type Writable } from "svelte/store";
+import { writable, type Writable } from 'svelte/store'
 
-export const currentMenu: Writable<Maybe<'default' | 'profile' | 'friends'>> = writable(null)
+import type { Maybe } from '../../scripts/chess'
+
+export const currentMenu: Writable<Maybe<'default' | 'profile' | 'friends'>> =
+  writable(null)
