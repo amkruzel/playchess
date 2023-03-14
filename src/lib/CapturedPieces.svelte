@@ -1,9 +1,8 @@
 <script lang="ts">
-  import { copyPiece } from "../scripts/piece";
-  import { CURRENT_GAME } from "../stores"
+  import { CURRENT_GAME } from '../stores'
   //import Piece from "./ChessBoard/Piece.svelte";
 
-  $: moves = $CURRENT_GAME.previousMoves
+  $: moves = $CURRENT_GAME.info.previousMoves
 
   let whiteCapturedPieces: Piece[] = []
   let blackCapturedPieces: Piece[] = []
@@ -11,8 +10,12 @@
   const getPiecesOfOneColor = (moves: chessMove[], color: color): Piece[] => {
     const piecesCaptured = moves.filter(m => m.pieceCaptured)
     if (piecesCaptured.length === 0) return []
-    const correctColor = piecesCaptured.filter(m => m.pieceCaptured.color === color)
-    const realList = correctColor.map(m => copyPiece(m.pieceCaptured)) as unknown
+    const correctColor = piecesCaptured.filter(
+      m => m.pieceCaptured.color === color
+    )
+    const realList = correctColor.map(m =>
+      copyPiece(m.pieceCaptured)
+    ) as unknown
     return realList as Piece[]
   }
 
@@ -37,10 +40,13 @@
 
   CURRENT_GAME.subscribe(game => {
     moves = game.previousMoves
-    whiteCapturedPieces = sortPiecesInDisplayOrder(getPiecesOfOneColor(moves, 'white'))
-    blackCapturedPieces = sortPiecesInDisplayOrder(getPiecesOfOneColor(moves, 'black'))    
+    whiteCapturedPieces = sortPiecesInDisplayOrder(
+      getPiecesOfOneColor(moves, 'white')
+    )
+    blackCapturedPieces = sortPiecesInDisplayOrder(
+      getPiecesOfOneColor(moves, 'black')
+    )
   })
-  
 </script>
 
 <article>
@@ -59,7 +65,6 @@
         </div>
       </div>
     </hgroup>
-    
   </div>
 </article>
 
@@ -73,7 +78,7 @@
     padding-left: 10px;
   }
 
-  div{
+  div {
     padding: 20px;
   }
 </style>

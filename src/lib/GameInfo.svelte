@@ -1,15 +1,17 @@
 <script lang="ts">
-  import { onMount } from "svelte"
-  import { capitalize } from "../common";
+  import { onMount } from 'svelte'
+  import { capitalize } from '../common'
+  import { isGame } from '../scripts/chess'
 
-  import { CURRENT_GAME } from "../stores"
+  import { CURRENT_GAME } from '../stores'
+
+  import type { Game } from '../scripts/chess'
   //import Piece from "./ChessBoard/Piece.svelte";
 
-  $: currentPlayerColor = $CURRENT_GAME.currentPlayerColor
-  $: currentPlayerDisplayName = $CURRENT_GAME[`${currentPlayerColor}Player`]
+  $: currentPlayerColor = $CURRENT_GAME.info.currentPlayer
+  $: currentPlayerDisplayName = $CURRENT_GAME.info[`${currentPlayerColor}`]
 
   $: moves = $CURRENT_GAME.previousMoves
-  
 </script>
 
 <article>
@@ -17,7 +19,7 @@
     <hgroup class="current-player-container">
       <h2>Current Player:</h2>
       <div class="current-player">
-        {currentPlayerDisplayName ?? capitalize(currentPlayerColor)}
+        {currentPlayerDisplayName ?? capitalize(currentPlayerColor ?? '')}
       </div>
     </hgroup>
 
@@ -26,14 +28,20 @@
       <div class="moves-container">
         {#each moves as move}
           <div class="move container">
-            <b>Move {move.moveNumber}</b>
-            <span>{capitalize(move.pieceMoved.color)} {move.pieceMoved.name} {move.from} to {move.to}</span>
-            {#if (move.pieceCaptured)} {capitalize(move.pieceCaptured.color)} {move.pieceCaptured.name} captured {/if}
+            <b>Move {move.number}</b>
+            <span
+              >{capitalize(move.piece.color)}
+              {move.piece.name}
+              {move.from} to {move.to}</span
+            >
+            {#if move.capture}
+              {capitalize(move.capture.color)}
+              {move.capture.name} captured
+            {/if}
           </div>
         {/each}
       </div>
     </hgroup>
-    
   </div>
 </article>
 
@@ -51,7 +59,9 @@
     padding: 20px;
   }
 
-  .move, .moves-container, .current-player {
+  .move,
+  .moves-container,
+  .current-player {
     padding: 0;
   }
 
@@ -69,5 +79,4 @@
   .current-player {
     font-size: 24px;
   }
-
 </style>

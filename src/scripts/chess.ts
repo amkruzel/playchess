@@ -45,6 +45,7 @@ export type Move = {
   from: location
   to: location
   piece: Piece
+  number: number
   bigPawnMove?: boolean
   capture?: Piece
   promotion?: boolean
@@ -100,6 +101,8 @@ const RowValues = ['1', '2', '3', '4', '5', '6', '7', '8']
  *
  */
 
+export const delay = (ms: number) => new Promise(res => setTimeout(res, ms))
+
 /**
  *
  * @param max
@@ -119,6 +122,10 @@ export const movesArrHasAtLeastOneItem = (
     return move.from && move.to && !!move.piece
   }
   return val instanceof Array && val.length > 0 && val.every(validateMove)
+}
+
+export const isGame = (g: Maybe<Game>): g is Game => {
+  return g instanceof Game
 }
 
 /**
@@ -760,6 +767,7 @@ export class Game {
       piece: p,
       from,
       to,
+      number: this._currentMoveNumber,
     }
 
     const capture = this._getMoveCapture(p, to)
@@ -1352,6 +1360,19 @@ export class Game {
       black: this._black,
       status: this._status,
     }
+  }
+
+  get isComputerMove() {
+    if (this._type !== 'computer') return false
+
+    const curColor = this._currentPlayerColor
+    const computerColor = this._white === 'computer' ? 'white' : 'black'
+
+    return curColor === computerColor
+  }
+
+  get previousMoves() {
+    return this._previousMoves
   }
 
   /* Setters */

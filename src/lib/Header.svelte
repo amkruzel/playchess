@@ -51,7 +51,7 @@
       // The game must not be the current game and must also not have already
       // been saved (this should not be possible anyway)
       if (
-        game.info.clientID !== $CURRENT_GAME?.info.clientID &&
+        game.info.clientID !== $CURRENT_GAME.info.clientID &&
         !gameIDs.find(el => el === game.info.clientID)
       ) {
         newGamesList.push(game)

@@ -1,15 +1,16 @@
 <script lang="ts">
-  import Piece from "./Piece.svelte"
+  import ChessPiece from './ChessPiece.svelte'
 
-  import { ChessPiece } from "../../scripts/piece"
-  import { ChessGame } from "../../scripts/game"
-  import { CURRENT_GAME } from "../../stores";
-  import { mediaFolder } from "../../common";
+  import { CURRENT_GAME } from '../../stores'
+  import { mediaFolder } from '../../common'
 
-  export let location
-  export let game
+  import type { Game, location } from '../../scripts/chess'
+
+  export let location: location
+  export let game: Game
   export let validSquare = false
 
+  // prettier-ignore
   const LightSquares = [ 'a2', 'a4', 'a6', 'a8'
                        , 'b1', 'b3', 'b5', 'b7' 
                        , 'c2', 'c4', 'c6', 'c8'
@@ -18,17 +19,20 @@
                        , 'f1', 'f3', 'f5', 'f7' 
                        , 'g2', 'g4', 'g6', 'g8'
                        , 'h1', 'h3', 'h5', 'h7' ]
-  
-  $: piece = game.getPiece(location)   
 
+  $: piece = game.pieceAt(location)
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
-<div data-location="{location}" id="{LightSquares.includes(location) ? 'light' : ''}" class="square">
+<div
+  data-location={location}
+  id={LightSquares.includes(location) ? 'light' : ''}
+  class="square"
+>
   {#if validSquare}
-    <span></span>
+    <span />
   {/if}
-  <Piece {piece} />
+  <ChessPiece {piece} />
 </div>
 
 <style>
@@ -46,12 +50,9 @@
     display: grid;
     place-items: center;
     background-color: var(--dark-square-color) !important;
-
   }
 
   .square#light {
     background-color: var(--light-square-color) !important;
   }
-
-  
 </style>

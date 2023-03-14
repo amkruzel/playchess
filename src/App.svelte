@@ -77,7 +77,7 @@
 
   STATE.subscribe(value => {
     if (value === 'loadgame') {
-      CURRENT_GAME.set(copyGame($pendingGameToLoad))
+      //CURRENT_GAME.set(copyGame($pendingGameToLoad))
     }
 
     if (value === 'newgame') {
@@ -150,7 +150,7 @@
     </div>
   {/if}
 
-  {#if currentContent.endsWith('game')}
+  {#if currentContent.endsWith('game') && !!$CURRENT_GAME}
     <div class="main container" in:fade out:fade>
       <ChessBoard game={$CURRENT_GAME} />
       <GameInfo />
