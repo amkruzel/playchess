@@ -108,6 +108,8 @@
       ])
 
       selectedPromotionPiece.subscribe(name => {
+        console.log(name, move)
+
         if (typeof name !== 'string' || !move.promote) return clearLocations()
 
         console.log(name, move)

@@ -13,8 +13,11 @@
   export let location: location
 
   function handleClick(e) {
+    if (e.target.tagName === 'DIV') return
+
     const buttonElement: HTMLButtonElement =
-      e.target.tagName === 'BUTTON' ? e.parentElement : e.target
+      e.target.tagName !== 'BUTTON' ? e.target.parentElement : e.target
+
     const promotionPieceName = buttonElement.dataset.promotionName
 
     if (promotionPieceName)
@@ -29,10 +32,9 @@
   <article
     in:fly={{ y: -900, delay: 100, duration: 250 }}
     out:fly={{ y: -900 }}
-    on:click={handleClick}
   >
     <h3>Choose a piece to promote to:</h3>
-    <div class="grid">
+    <div on:click={handleClick} class="grid">
       <button class="outline" data-promotion-name="rook">
         <ChessPiece piece={new Piece('rook', color, location)} />
       </button>

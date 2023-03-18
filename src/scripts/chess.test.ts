@@ -488,6 +488,21 @@ describe(Game, () => {
     })
 
     test('king mysteriously disappears', () => {
+      /**
+       * EXAMPLES
+       * 
+       * 0: Object { from: "g1", to: "h3", number: 1, … }
+       * 1: Object { from: "e7", to: "e5", number: 2, … }
+​​       * 2: Object { from: "h1", to: "g1", number: 3, … }
+       *
+       * 0: Object { from: "c2", to: "c4", number: 1, … }
+​​
+1: Object { from: "g8", to: "h6", number: 2, … }
+​​
+2: Object { from: "c4", to: "c5", number: 3, … }
+​​
+3: Object { from: "g7", to: "g5", number: 4, … }
+       */
       const g = new Game()
 
       move(g, 'a2', 'a4')
