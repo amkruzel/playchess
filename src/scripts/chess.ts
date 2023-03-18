@@ -259,6 +259,8 @@ export const makeComputerMove = (g: Game): Maybe<Move> => {
   // get all piece locations
   const moves = g.possibleMoves(info.currentPlayer)
 
+  if (g.info.currentPlayer === 'white') console.log(moves)
+
   if (!moves) return null
 
   // get the validMoves for one location

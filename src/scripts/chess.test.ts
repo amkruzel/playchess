@@ -114,7 +114,7 @@ describe('functions', () => {
   })
 
   test('makeComputerMove', () => {
-    const g = new Game().setComputerColor('white')
+    const g = new Game().setComputerColor('white').setGameType('computer')
 
     const m = makeComputerMove(g)
 
@@ -496,12 +496,9 @@ describe(Game, () => {
 ​​       * 2: Object { from: "h1", to: "g1", number: 3, … }
        *
        * 0: Object { from: "c2", to: "c4", number: 1, … }
-​​
-1: Object { from: "g8", to: "h6", number: 2, … }
-​​
-2: Object { from: "c4", to: "c5", number: 3, … }
-​​
-3: Object { from: "g7", to: "g5", number: 4, … }
+       * 1: Object { from: "g8", to: "h6", number: 2, … }
+       * 2: Object { from: "c4", to: "c5", number: 3, … }
+       * 3: Object { from: "g7", to: "g5", number: 4, … }
        */
       const g = new Game()
 
@@ -509,13 +506,9 @@ describe(Game, () => {
       move(g, 'g8', 'f6')
       move(g, 'a1', 'a3')
 
-      ascii(g)
-
       move(g, 'h7', 'h5')
 
       expect(g.pieceAt('e8')?.name).toEqual('king')
-
-      ascii(g)
     })
 
     test('play a game', () => {
