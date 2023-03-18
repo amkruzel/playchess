@@ -2,7 +2,11 @@
   import { Game, delay, makeComputerMove } from '../scripts/chess'
 
   import type { location, Maybe, Move, promotionName } from '../scripts/chess'
-  import { CURRENT_GAME } from '../stores'
+  import {
+    CURRENT_GAME,
+    selectedPromotionPiece,
+    SHOW_PROMOTION_MODAL,
+  } from '../stores'
 
   import { mediaFolder } from '../common'
 
@@ -16,16 +20,16 @@
 
   // board locations, in order from top-left to bottom-right
   // prettier-ignore
-  const whiteLocations: location[] = ['a8','b8','c8','d8','e8','f8','g8','h8',
-                                      'a7','b7','c7','d7','e7','f7','g7','h7',
-                                      'a6','b6','c6','d6','e6','f6','g6','h6',
-                                      'a5','b5','c5','d5','e5','f5','g5','h5',
-                                      'a4','b4','c4','d4','e4','f4','g4','h4',
-                                      'a3','b3','c3','d3','e3','f3','g3','h3',
-                                      'a2','b2','c2','d2','e2','f2','g2','h2',
-                                      'a1','b1','c1','d1','e1','f1','g1','h1' ]
+  const whiteLocations: location[] = [ 'a8','b8','c8','d8','e8','f8','g8','h8',
+                                       'a7','b7','c7','d7','e7','f7','g7','h7',
+                                       'a6','b6','c6','d6','e6','f6','g6','h6',
+                                       'a5','b5','c5','d5','e5','f5','g5','h5',
+                                       'a4','b4','c4','d4','e4','f4','g4','h4',
+                                       'a3','b3','c3','d3','e3','f3','g3','h3',
+                                       'a2','b2','c2','d2','e2','f2','g2','h2',
+                                       'a1','b1','c1','d1','e1','f1','g1','h1' ]
 
-  $: locationsList =
+  const locationsList =
     game.info.playerColor === 'white'
       ? whiteLocations
       : whiteLocations.reverse()
@@ -54,13 +58,18 @@
     const squareTarget: Maybe<HTMLElement> =
       clickTarget?.tagName !== 'DIV' ? clickTarget?.parentElement : clickTarget
 
-    if (squareTarget === null) return clearLocations()
+    if (!squareTarget) return clearLocations()
 
-    if (fromLocation === null) handleFirstClick(squareTarget as HTMLDivElement)
-    else if (toLocation === null) {
+    if (!fromLocation) handleFirstClick(squareTarget as HTMLDivElement)
+    else if (!toLocation) {
       if (possibleLocations.length === 0) return
       handleSecondClick(squareTarget as HTMLDivElement)
     }
+  }
+
+  function handleMoveCleanup(): void {
+    game.cleanup()
+    updateAfterPieceMove(game)
   }
 
   const handleFirstClick = (squareTarget: HTMLDivElement) => {
@@ -69,22 +78,21 @@
     fromLocation = `${squareTarget?.dataset.location}` as location
 
     const fromPiece = game.pieceAt(fromLocation)
-    if (fromPiece === null) return
+    if (!fromPiece) return clearLocations()
 
     possibleMoves = $CURRENT_GAME.validMoves(fromLocation)
-    if (!possibleMoves) return
+    if (!possibleMoves) return clearLocations()
 
     possibleLocations = possibleMoves.moves.map(el => el.to)
   }
 
-  const handleSecondClick = async (squareTarget: HTMLDivElement) => {
+  const handleSecondClick = (squareTarget: HTMLDivElement) => {
     if (!possibleMoves) return clearLocations()
     toLocation = `${squareTarget?.dataset.location}` as location
 
     if (!toLocation || !possibleLocations.includes(toLocation))
       return clearLocations()
 
-    // fromLocation must not be null because we check for that right before calling this function
     const chosenMoveObj = possibleMoves.moves.find(m => m.to === toLocation)
     if (!chosenMoveObj) return clearLocations()
 
@@ -94,11 +102,18 @@
 
     // if there needs to be a promotion, we need to handle that here
     if (move.promote) {
-      // TODO
-    }
+      SHOW_PROMOTION_MODAL.set([
+        true,
+        { color: move.move.piece.color, location: move.move.to },
+      ])
 
-    game.cleanup()
-    updateAfterPieceMove(game)
+      selectedPromotionPiece.subscribe(name => {
+        if (typeof name !== 'string' || !move.promote) return
+
+        move.promote(name)
+        handleMoveCleanup()
+      })
+    } else handleMoveCleanup()
   }
 
   const updateAfterPieceMove = (game: Game) => {
@@ -144,13 +159,5 @@
     grid-template: repeat(8, 65px) / repeat(8, 65px);
 
     transition: all 500ms;
-  }
-
-  [draggable='true'] {
-    cursor: grab;
-  }
-
-  [draggable='true']:active {
-    cursor: grabbing;
   }
 </style>

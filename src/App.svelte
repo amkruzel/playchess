@@ -25,6 +25,7 @@
     SIGN_OUT_USER,
     SHOW_NON_DISRUPTIVE_POPUP,
     IS_CHECKMATE,
+    SHOW_PROMOTION_MODAL,
   } from './stores'
 
   import {
@@ -44,11 +45,13 @@
   import GameOver from './lib/GameOver.svelte'
 
   import type { Maybe } from './scripts/chess'
+  import PiecePromotion from './lib/PiecePromotion.svelte'
 
   export const html = document.querySelector('html')
 
   let loginModalShouldBeVisible: boolean
   let gameOverModalShouldBeVisible: boolean
+  let promotionModalShouldBeVisible: boolean
   let nonDisruptivePopupMessages: string[] = []
 
   function applyGameSettings(g: Game): Game {
@@ -113,6 +116,17 @@
     SHOW_SIGN_IN_MODAL.set(false)
   })
 
+  let pieceColor, location
+
+  SHOW_PROMOTION_MODAL.subscribe(val => {
+    if (val[0]) {
+      pieceColor = val[1].color
+      location = val[1].location
+    }
+
+    promotionModalShouldBeVisible = val[0]
+  })
+
   IS_CHECKMATE.subscribe(val => {
     gameOverModalShouldBeVisible = val
   })
@@ -142,6 +156,9 @@
 
 {#if loginModalShouldBeVisible} <Login bind:loginModalShouldBeVisible /> {/if}
 {#if gameOverModalShouldBeVisible} <GameOver /> {/if}
+{#if promotionModalShouldBeVisible}
+  <PiecePromotion color={pieceColor} {location} />
+{/if}
 
 <div class="content-container">
   {#if currentContent === 'form'}
@@ -202,6 +219,7 @@
     --switch-color: var(--primary-inverse);
     --switch-checked-background-color: var(--primary);
   }
+
   .close {
     float: right;
   }

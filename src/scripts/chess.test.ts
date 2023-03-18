@@ -5,6 +5,7 @@ import {
   Game,
   makeComputerMove,
   movesArrHasAtLeastOneItem,
+  fenToGame,
 } from './chess'
 import type { location, Move } from './chess'
 
@@ -74,6 +75,14 @@ function move(g: Game, from: location, to: location) {
   if (p) p.move(to)
 
   g.board = board
+}
+
+function fullMove(g: Game, from: location, to: location): void {
+  const mv = g.validMoves(from)
+
+  mv?.makeMove(mv.moves[mv.moves.findIndex(m => m.to === to)])
+
+  g.cleanup()
 }
 
 function remove(g: Game, loc: location) {
@@ -156,7 +165,7 @@ describe(Piece, () => {
 
       expect(p.moveType('d8')).toEqual('promotion')
 
-      expect(p.moveType('d3')).toEqual('enpassant')
+      expect(p.moveType('d3')).toEqual('diagpawn')
       expect(p.moveType('e3')).toBeNull
     })
 
@@ -397,38 +406,128 @@ describe(Game, () => {
     })
   })
 
-  describe('play a game', () => {
-    const g = new Game().setGameType('computer').setComputerColor('black')
+  describe('additional tests', () => {
+    test('pawn captures', () => {
+      const g = new Game()
 
-    const d2 = g.validMoves('d2')
-    if (d2) {
-      const d2moveidx = d2.moves.findIndex(m => m.to === 'd3')
-      d2.makeMove(d2.moves[d2moveidx])
-    }
-    g.cleanup()
+      const pc2 = g.validMoves('c2')
+      if (pc2) pc2.makeMove(pc2.moves[pc2.moves.findIndex(m => m.bigPawnMove)])
 
-    makeComputerMove(g)
+      g.cleanup()
 
-    const c1 = g.validMoves('c1')
-    if (c1) {
-      const c1idx = c1.moves.findIndex(m => m.to === 'g5')
-      c1.makeMove(c1.moves[c1idx])
-    }
-    g.cleanup()
+      expect(g.info.currentPlayer).toEqual('black')
 
-    makeComputerMove(g)
+      const pd7 = g.validMoves('d7')
+      const asdf = !!pd7
+        ? pd7.makeMove(pd7.moves[pd7.moves.findIndex(m => m.bigPawnMove)])
+        : null
 
-    const g5 = g.validMoves('g5')
-    if (g5) {
-      const g5idx = g5.moves.findIndex(m => m.to === 'e7')
-      expect(g5.moves[g5idx].capture).toBeTruthy()
-      g5.makeMove(g5.moves[g5idx])
-    }
-    g.cleanup()
+      g.cleanup()
 
-    makeComputerMove(g)
+      ascii(g)
 
-    //ascii(g)
+      expect(g.info.currentPlayer).toEqual('white')
+
+      expect(g.pieceAt('c4')?.moves).toHaveLength(3)
+
+      const pc4 = g.validMoves('c4')
+
+      expect(pc4?.moves).toHaveLength(2)
+    })
+
+    test('pawn cannot jump over a piece', () => {
+      const fen = 'RNBQKBNR/PPPPPPPP/p7/8/8/8/8/8 a'
+      const g = fenToGame(fen)
+
+      expect(g.validMoves('b7')).toBeNull()
+    })
+
+    test('promotion', () => {
+      const g = new Game()
+
+      remove(g, 'a7')
+      remove(g, 'a8')
+      move(g, 'a2', 'a7')
+
+      const a7 = g.validMoves('a7')
+
+      const a7move = a7
+        ? a7.makeMove(a7.moves[a7?.moves.findIndex(m => m.to === 'a8')])
+        : null
+
+      expect(a7move).not.toBeNull()
+      expect(a7move?.promote).toBeTruthy()
+
+      const a7promote = a7move?.promote ? a7move.promote('rook') : null
+
+      expect(a7promote).toBeTruthy()
+
+      g.cleanup()
+
+      ascii(g)
+
+      expect(g.info.currentPlayer).toEqual('black')
+      expect(g.pieceAt('a8')?.name).toEqual('rook')
+    })
+
+    test('knight captures', () => {
+      const g = new Game()
+
+      const c2 = g.validMoves('c2')
+
+      c2?.makeMove(c2.moves[c2.moves.findIndex(m => m.to === 'c4')])
+
+      g.cleanup()
+
+      //move(g, 'c2', 'c4')
+      fullMove(g, 'd7', 'd5')
+
+      ascii(g)
+
+      const b1 = g.validMoves('b1')
+
+      const b1move = b1?.makeMove(
+        b1.moves[b1.moves.findIndex(m => m.to === 'c3')]
+      )
+
+      console.log(b1move)
+
+      expect(b1move?.move.capture).toBeFalsy()
+    })
+
+    test('play a game', () => {
+      const g = new Game().setGameType('computer').setComputerColor('black')
+
+      const d2 = g.validMoves('d2')
+      if (d2) {
+        const d2moveidx = d2.moves.findIndex(m => m.to === 'd3')
+        d2.makeMove(d2.moves[d2moveidx])
+      }
+      g.cleanup()
+
+      makeComputerMove(g)
+
+      const c1 = g.validMoves('c1')
+      if (c1) {
+        const c1idx = c1.moves.findIndex(m => m.to === 'g5')
+        c1.makeMove(c1.moves[c1idx])
+      }
+      g.cleanup()
+
+      makeComputerMove(g)
+
+      const g5 = g.validMoves('g5')
+      if (g5) {
+        const g5idx = g5.moves.findIndex(m => m.to === 'e7')
+        expect(g5.moves[g5idx].capture).toBeTruthy()
+        g5.makeMove(g5.moves[g5idx])
+      }
+      g.cleanup()
+
+      makeComputerMove(g)
+
+      //ascii(g)
+    })
   })
 
   describe('pieceAt()', () => {
@@ -458,7 +557,7 @@ describe(Game, () => {
   })
 
   describe('possibleMoves()', () => {
-    test('possibleMoves', () => {
+    describe('generic possibleMoves', () => {
       const g = new Game()
       // if it's not black's turn, should be no valid moves
 
@@ -473,6 +572,13 @@ describe(Game, () => {
       move(g, 'e2', 'e3')
 
       expect(g.possibleMoves('white')).toHaveLength(12)
+
+      test('pawn cannot jump', () => {
+        const fen = 'RNBQKBNR/PP2PPPP/8/2PP4/2p5/n7/pp1ppppp/r1bqkbnr w'
+        const g = fenToGame(fen)
+
+        expect(g.validMoves('a2')).toBeNull()
+      })
     })
   })
 

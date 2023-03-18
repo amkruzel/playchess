@@ -3,7 +3,7 @@
   import { slide, fly } from 'svelte/transition'
   import { HAS_LOCAL_SAVED_GAMES } from '../../../stores'
 
-  import { activeLoadGameID, pendingGameToLoad } from '../stores'
+  import { activeLoadGameID, pendingGameToLoad, activeForm } from '../stores'
 
   import type { Game, Maybe } from '../../../scripts/chess'
 
@@ -48,39 +48,45 @@
   onDestroy(() => activeLoadGameID.set(null))
 </script>
 
-<div in:fly={{ x: 200 }} out:fly={{ x: 200 }} class="load-container">
-  {#if !$HAS_LOCAL_SAVED_GAMES}
-    <div>
-      <h2>
-        There are no games saved locally. Sign in to search for games saved to
-        your account.
-      </h2>
-    </div>
-  {:else}
-    <div>
-      <h2>Choose a game to load:</h2>
-      <div class="games-list">
-        {#each savedGamesJSON as game}
-          <!-- svelte-ignore a11y-click-events-have-key-events -->
-          <div
-            on:click={handleClick}
-            data-id={game.info.clientID}
-            class="game {$activeLoadGameID === game.info.clientID
-              ? 'active'
-              : ''}"
-          >
-            <div>
-              Started on {'TODO'}
-            </div>
-            <div>Playing as {game.info.playerColor}</div>
-            <div>It is {game.info.currentPlayer} player's turn</div>
-            <div>Currently on move number {game.info.move}</div>
-          </div>
-        {/each}
+{#if $activeForm === 'loadgame'}
+  <div
+    in:fly|local={{ x: 200 }}
+    out:fly|local={{ x: 200 }}
+    class="load-container"
+  >
+    {#if !$HAS_LOCAL_SAVED_GAMES}
+      <div>
+        <h2>
+          There are no games saved locally. Sign in to search for games saved to
+          your account.
+        </h2>
       </div>
-    </div>
-  {/if}
-</div>
+    {:else}
+      <div>
+        <h2>Choose a game to load:</h2>
+        <div class="games-list">
+          {#each savedGamesJSON as game}
+            <!-- svelte-ignore a11y-click-events-have-key-events -->
+            <div
+              on:click={handleClick}
+              data-id={game.info.clientID}
+              class="game {$activeLoadGameID === game.info.clientID
+                ? 'active'
+                : ''}"
+            >
+              <div>
+                Started on {'TODO'}
+              </div>
+              <div>Playing as {game.info.playerColor}</div>
+              <div>It is {game.info.currentPlayer} player's turn</div>
+              <div>Currently on move number {game.info.move}</div>
+            </div>
+          {/each}
+        </div>
+      </div>
+    {/if}
+  </div>
+{/if}
 
 <style>
   .load-container {

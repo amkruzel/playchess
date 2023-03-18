@@ -45,7 +45,7 @@ export type Move = {
   from: location
   to: location
   piece: Piece
-  number: number
+  number?: number
   bigPawnMove?: boolean
   capture?: Piece
   promotion?: boolean
@@ -160,12 +160,81 @@ export const numToAlgebraic = ([row, column]: coords): location => {
 }
 
 export const filterNullsFromList = <T>(x: Maybe<T>[]): T[] => {
-  const l: T[] = []
-  x.forEach(y => {
-    if (!!y) l.push(y)
-  })
+  return x.filter(i => i) as T[]
+}
 
-  return l
+/**
+ *
+ * @param fen
+ * @returns if fen is valid, returns a Game object. If invalid, returns null.
+ *          currently this does not completely convert the fen representation,
+ *          only the board
+ */
+export const fenToGame = (fen: string): Game => {
+  function stringToRow(str: string, rowNum: idxLimit): Maybe<Piece>[] {
+    // prettier-ignore
+    type pieceChar = 'p' | 'n' | 'b' | 'r' | 'q' | 'k'
+                   | 'P' | 'N' | 'B' | 'R' | 'Q' | 'K'
+
+    type nameAndColor = [name, color]
+
+    function charIsPieceLetter(p: string): p is pieceChar {
+      // prettier-ignore
+      return [ 'p', 'n', 'b', 'r', 'q', 'k'
+             , 'P', 'N', 'B', 'R', 'Q', 'K' ].includes(p)
+    }
+
+    function letterToNameAndColor(c: pieceChar): nameAndColor {
+      let name: name
+      let color: color
+
+      if (c.toLowerCase() === 'p') name = 'pawn'
+      else if (c.toLowerCase() === 'n') name = 'knight'
+      else if (c.toLowerCase() === 'b') name = 'bishop'
+      else if (c.toLowerCase() === 'r') name = 'rook'
+      else if (c.toLowerCase() === 'q') name = 'queen'
+      else name = 'king'
+
+      color = c === c.toLowerCase() ? 'white' : 'black'
+
+      return [name, color]
+    }
+
+    // convert numbers to an equal number of 'x's
+    const fixedArrOfChars = str
+      .split('')
+      .map((c: string): string =>
+        charIsPieceLetter(c) ? c : 'x'.repeat(parseInt(c))
+      )
+      .join('')
+      .split('') as (pieceChar | 'x')[]
+
+    const row: Maybe<Piece>[] = fixedArrOfChars.map((char, col: number) => {
+      if (char === 'x') return null
+
+      const pieceInfo = letterToNameAndColor(char)
+      return new Piece(
+        pieceInfo[0],
+        pieceInfo[1],
+        numToAlgebraic([rowNum as idxLimit, col as idxLimit])
+      )
+    })
+
+    return row
+  }
+
+  const boardInFen = fen.split(' ')[0]
+
+  const maybeBoard: Board = boardInFen
+    .split('/')
+    .reverse()
+    .map((row, idx) => stringToRow(row, idx as idxLimit))
+
+  const g = new Game()
+
+  g.board = maybeBoard
+
+  return g
 }
 
 /**
@@ -252,7 +321,7 @@ export class Piece {
    */
   moveType(
     to: location
-  ): Maybe<'bigpawn' | 'promotion' | 'castle' | 'enpassant'> {
+  ): Maybe<'bigpawn' | 'promotion' | 'castle' | 'diagpawn'> {
     const [curRow, curCol] = algebraicToNum(this.location) as coords
     const [newRow, newCol] = algebraicToNum(to) as coords
 
@@ -264,7 +333,7 @@ export class Piece {
       if (Math.abs(curRow - newRow) === 2 && curCol === newCol) return 'bigpawn'
       if (to.slice(1) === '1' || to.slice(1) === '8') return 'promotion'
       if (Math.abs(curRow - newRow) === 1 && Math.abs(curCol - newCol) === 1)
-        return 'enpassant'
+        return 'diagpawn'
     }
 
     return null
@@ -339,8 +408,7 @@ export class Piece {
     const moves: location[] = []
     if (this.isRemoved) return moves
 
-    // It's safe to assert that this won't be null because we checked for null above
-    const [row, column] = algebraicToNum(this._location) as [idxLimit, idxLimit]
+    const [row, column] = algebraicToNum(this._location)
 
     if (this._name === 'pawn') {
       // It can move one square forward
@@ -511,6 +579,7 @@ export class Game {
   private _previousMoves: Move[] = []
   private _removedPieces: Piece[] = []
   private _needsCleanup: boolean = false
+  private _enPassantColor: Maybe<location> = null
 
   /* "Setters" */
 
@@ -580,13 +649,13 @@ export class Game {
   /**
    * Looks for all of the valid moves for the piece at @loc@
    * If @loc@ is empty, returns an empty array
-   * @param {location} loc - the location we're looking for the valid moves from
+   * @param {location} location - the location we're looking for the valid moves from
    * @returns {Object}
    * @property {Move[]} obj.moves - a list of Moves - these are all possible moves
    *                                from the given location
    * @property {makeMove} [obj.makeMove] - a function that should be called to make a move
    */
-  validMoves(loc: location): Maybe<{
+  validMoves(location: location): Maybe<{
     moves: [Move, ...Move[]]
     makeMove: (m: Move) => Maybe<{
       move: Move
@@ -594,7 +663,7 @@ export class Game {
     }>
   }> {
     const moves: Move[] | [Move, ...Move[]] = []
-    const piece = this.pieceAt(loc)
+    const piece = this.pieceAt(location)
 
     if (!piece || piece.isRemoved) return null
 
@@ -603,7 +672,7 @@ export class Game {
         this._basicValidMoveChecks(piece, loc) &&
         this._isMoveUnobstructed(piece, loc) &&
         this._isValidCastlingMove(piece, loc) &&
-        this._isValidEPCapture(piece, loc)
+        this._isValidPawnMove(piece, loc)
     )
 
     pieceLocations.forEach(loc => {
@@ -747,11 +816,13 @@ export class Game {
     const from = p.location
     const toPiece = this.pieceAt(to)
 
-    if (p.moveType(to) === 'enpassant') {
+    if (p.moveType(to) === 'diagpawn') {
       const [fromRow, fromCol] = algebraicToNum(from)
       const [toRow, toCol] = algebraicToNum(to)
 
-      return this.pieceAt(numToAlgebraic([fromRow, toCol]))
+      return this.lastMove.bigPawnMove
+        ? this.pieceAt(numToAlgebraic([fromRow, toCol]))
+        : toPiece
     }
     return toPiece
   }
@@ -777,8 +848,8 @@ export class Game {
 
     if (capture) move.capture = capture
     if (castle) move.castle = castle
-    if (moveType === 'bigpawn') move.bigPawnMove = true
     if (moveType === 'promotion') move.promotion = true
+    if (moveType === 'bigpawn') move.bigPawnMove = true
 
     return move
   }
@@ -809,6 +880,33 @@ export class Game {
   }
 
   /**
+   * If the piece being moved is a pawn, this method checks a few things:
+   * - if the piece is attempting to be moved diagonally,
+   *   it must be capturing another piece, EITHER directly or via
+   *   en passant
+   * - if the piece is not moving diagonally, it must not be capturing
+   *   another piece
+   * @param p
+   * @param to
+   */
+  private _isValidPawnMove(p: Piece, to: location): boolean {
+    if (p.isRemoved) return false
+    if (p.name !== 'pawn') return true
+
+    const [newRow, newCol] = algebraicToNum(to)
+    const [curRow, curCol] = algebraicToNum(p.location)
+
+    // if the piece is not moving diagonally
+    if (curCol === newCol) return !this.pieceAt(to)
+
+    return (
+      !!this.pieceAt(to) ??
+      (this.lastMove.bigPawnMove &&
+        this.lastMove.from === numToAlgebraic([curRow, newCol]))
+    )
+  }
+
+  /**
    * If the piece being moved is a rook, bishop, or queen,
    * this will return true if it is not jumping over any
    * pieces.
@@ -822,11 +920,16 @@ export class Game {
   private _isMoveUnobstructed(p: Piece, to: location): boolean {
     if (p.isRemoved) return false
 
-    if (p.name === 'pawn' || p.name === 'knight' || p.name === 'king')
+    if (
+      p.name === 'knight' ||
+      p.name === 'king' ||
+      (p.name === 'pawn' && p.moveType(to) !== 'bigpawn')
+    )
       return true
 
     if (p.name === 'bishop') return this._isDiagonalMoveUnobstructed(p, to)
-    if (p.name === 'rook') return this._isHorizontalMoveUnobstructed(p, to)
+    if (p.name === 'rook' || p.name === 'pawn')
+      return this._isHorizontalMoveUnobstructed(p, to)
 
     // The only piece left is queen
     return (
@@ -840,7 +943,6 @@ export class Game {
     // have an obstructed diagonal move
     if (p.name !== 'bishop' && p.name !== 'queen') return true
 
-    // These assertions are okay because both locations must be valid
     const [newRow, newCol] = algebraicToNum(to)
     const [curRow, curCol] = algebraicToNum(p.location)
 
@@ -907,12 +1009,13 @@ export class Game {
   private _isHorizontalMoveUnobstructed(p: Piece, to: location): boolean {
     // Any other pieces would never move horizontally so they
     // would never have an obstructed horizontal move
-    if (p.name !== 'rook' && p.name !== 'queen') return true
+    if (p.name !== 'rook' && p.name !== 'queen' && p.name !== 'pawn')
+      return true
 
     const [newRow, newCol] = algebraicToNum(to)
     const [curRow, curCol] = algebraicToNum(p.location)
 
-    // if the piece is not moving horizontally, return true
+    // if the piece is not moving horizontally, return true for queen - still need to check diag
     if (curRow !== newRow && curCol !== newCol) return p.name !== 'rook'
 
     // piece is moving horizontally
@@ -1057,10 +1160,7 @@ export class Game {
   private isCheckmate(color: color): boolean {
     if (this._currentPlayerColor !== color) return false
 
-    const currentlyInCheck = this._isKingCapturable(color)
-    const moves = this.possibleMoves(color)
-
-    return !moves && currentlyInCheck
+    return this._isKingCapturable(color)
   }
 
   /********************
@@ -1260,9 +1360,14 @@ export class Game {
     this._addMove(move)
 
     // 3.
-    //this._replacePiece(move.to, newPiece)
+    this._replacePiece(move.to, newPiece)
 
     return this.lastMove
+  }
+
+  private _replacePiece(loc: location, p: Piece) {
+    const [row, col] = algebraicToNum(loc)
+    this._board[row][col] = p
   }
 
   private swapPlayers() {
