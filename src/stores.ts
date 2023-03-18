@@ -21,7 +21,7 @@ export const SHOW_PROMOTION_MODAL: Writable<
 > = writable(false)
 export const SIGN_OUT_USER: Writable<boolean> = writable(false)
 export const SHOW_NON_DISRUPTIVE_POPUP: Writable<string | null> = writable(null)
-export const IS_CHECKMATE: Writable<boolean> = writable(false)
+export const SHOW_GAMEOVER_MODAL: Writable<boolean> = writable(false)
 
 export const selectedPromotionPiece: Writable<Maybe<promotionName>> =
   writable(null)

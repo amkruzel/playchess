@@ -5,7 +5,9 @@
 
   import { activeLoadGameID, pendingGameToLoad, activeForm } from '../stores'
 
-  import type { Game, Maybe } from '../../../scripts/chess'
+  import type { Maybe, serializedGame } from '../../../scripts/chess'
+
+  import { Game } from '../../../scripts/chess'
 
   export let isLoadGameFormValid: boolean = false
 
@@ -26,7 +28,12 @@
   const savedGamesString = $HAS_LOCAL_SAVED_GAMES
     ? (localStorage.getItem('savedGames') as string)
     : '[]'
-  const savedGamesJSON: Game[] = JSON.parse(savedGamesString)
+  const savedGamesJSONSerialized: serializedGame[] =
+    JSON.parse(savedGamesString)
+
+  const savedGamesJSON: Game[] = savedGamesJSONSerialized.map(g =>
+    Game.deserialize(g)
+  )
 
   function handleClick(e) {
     const gameTarget: Maybe<HTMLDivElement> = e.target
@@ -38,9 +45,11 @@
 
     const gameTargetID = realGameTarget.dataset.id
     if (gameTargetID) activeLoadGameID.set(parseInt(gameTargetID))
+
     isLoadGameFormValid =
       savedGamesJSON.filter(g => g.info.clientID === $activeLoadGameID)
         .length === 1
+
     $pendingGameToLoad =
       savedGamesJSON.find(g => g.info.clientID === $activeLoadGameID) ?? null
   }
@@ -74,6 +83,7 @@
                 ? 'active'
                 : ''}"
             >
+              {console.log(game)}
               <div>
                 Started on {'TODO'}
               </div>

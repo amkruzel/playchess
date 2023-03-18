@@ -5,6 +5,7 @@
   import {
     CURRENT_GAME,
     selectedPromotionPiece,
+    SHOW_GAMEOVER_MODAL,
     SHOW_PROMOTION_MODAL,
   } from '../stores'
 
@@ -122,6 +123,7 @@
 
   const updateAfterPieceMove = (game: Game) => {
     CURRENT_GAME.set(game)
+    if (game.info.status === 'inactive') return SHOW_GAMEOVER_MODAL.set(true)
     clickAudio.play()
     clearLocations()
   }

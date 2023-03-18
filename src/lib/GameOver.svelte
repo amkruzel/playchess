@@ -1,6 +1,6 @@
 <script lang="ts">
   import { fly } from 'svelte/transition'
-  import { CURRENT_GAME, IS_CHECKMATE, STATE } from '../stores'
+  import { CURRENT_GAME, SHOW_GAMEOVER_MODAL, STATE } from '../stores'
 
   import type { Maybe } from '../scripts/chess'
 
@@ -9,7 +9,7 @@
 
   function handleClick(e) {
     STATE.set('form')
-    IS_CHECKMATE.set(false)
+    SHOW_GAMEOVER_MODAL.set(false)
 
     const btn = document.querySelector(
       `[data-name="${e.target.dataset.btnName}game"]`
@@ -25,9 +25,7 @@
   >
     <h3>Game over!</h3>
     <p>
-      {hasPlayerWon ? 'You have won!' : 'You have lost.'}
-      <br /><br />
-      You can begin a new game or load an existing game with the buttons below.
+      {hasPlayerWon ? 'You have won! 🎉' : 'You have lost. 😔'}
     </p>
     <footer>
       <!-- svelte-ignore a11y-click-events-have-key-events -->

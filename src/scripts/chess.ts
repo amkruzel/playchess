@@ -57,6 +57,22 @@ export type Move = {
   }
 }
 
+export type serializedMove = {
+  from: location
+  to: location
+  piece: serializedPiece
+  number?: number
+  bigPawnMove?: boolean
+  capture?: serializedPiece
+  promotion?: boolean
+  promotionPiece?: serializedPiece
+  castle?: {
+    from: location
+    to: location
+    piece: serializedPiece
+  }
+}
+
 export type Board = Maybe<Piece>[][]
 
 export type Info = {
@@ -71,6 +87,34 @@ export type Info = {
   white?: string
   black?: string
   status: gamestatus
+}
+
+export type serializedPiece = {
+  _color: color
+  _hasBeenMoved: boolean
+  _isRemoved: boolean
+  _location: location
+  _name: name
+  _numberOfMoves: number
+  _previousLocations: location[]
+}
+
+export type serializedGame = {
+  _black: string
+  _board: Maybe<serializedPiece>[][]
+  _clientID: number
+  _currentMoveNumber: number
+  _currentPlayerColor: color
+  _dateStarted: string
+  _needsCleanup: boolean
+  _playerViewColor: color
+  _previousMoves: serializedMove[]
+  _removedPieces: serializedPiece[]
+  _status: gamestatus
+  _white: string
+  _type?: gametype
+  _onlineOrLocal?: gamelocation
+  _winner?: color
 }
 
 /********************
@@ -559,14 +603,27 @@ export class Piece {
   set location(loc: location) {
     this._location = loc
   }
+
+  /* Static Methods */
+
+  static deserialize(obj: serializedPiece): Piece {
+    const piece = new Piece(obj._name, obj._color, obj._location)
+
+    piece._hasBeenMoved = obj._hasBeenMoved
+    piece._isRemoved = obj._isRemoved
+    piece._numberOfMoves = obj._numberOfMoves
+    piece._previousLocations = obj._previousLocations
+
+    return piece
+  }
 }
 
 export class Game {
   // Properties that are not set when an instance of the class is created
-  private _onlineOrLocal: gamelocation
+  private _onlineOrLocal?: gamelocation
   private _playerViewColor: color
-  private _type: gametype
-  private _winner: color
+  private _type?: gametype
+  private _winner?: color
 
   // Properties that are set when an instance of the class is created
   private _white: string = 'White'
@@ -581,7 +638,6 @@ export class Game {
   private _previousMoves: Move[] = []
   private _removedPieces: Piece[] = []
   private _needsCleanup: boolean = false
-  private _enPassantColor: Maybe<location> = null
 
   /* "Setters" */
 
@@ -1499,5 +1555,61 @@ export class Game {
 
   private set winner(color: color) {
     this._winner = color
+  }
+
+  /* Static Methods */
+
+  static deserialize(obj: serializedGame): Game {
+    const game = new Game()
+    const objBoard = obj._board
+    const objRemovedPieces = obj._removedPieces
+
+    game._black = obj._black
+    game._clientID = obj._clientID
+    game._currentMoveNumber = obj._currentMoveNumber
+    game._currentPlayerColor = obj._currentPlayerColor
+    game._dateStarted = new Date(obj._dateStarted)
+    game._needsCleanup = obj._needsCleanup
+    game._onlineOrLocal = obj._onlineOrLocal
+    game._playerViewColor = obj._playerViewColor
+    game._status = obj._status
+    game._type = obj._type
+    game._white = obj._white
+    game._winner = obj._winner
+
+    game._removedPieces = objRemovedPieces.map(p => Piece.deserialize(p))
+
+    game._previousMoves = obj._previousMoves.map((m: serializedMove): Move => {
+      return {
+        from: m.from,
+        to: m.to,
+        piece: Piece.deserialize(m.piece),
+        number: m.number,
+        bigPawnMove: m.bigPawnMove,
+        capture: m.capture ? Piece.deserialize(m.capture) : undefined,
+        promotion: m.promotion,
+        promotionPiece: m.promotionPiece
+          ? Piece.deserialize(m.promotionPiece)
+          : undefined,
+        castle: m.castle
+          ? {
+              from: m.castle.from,
+              to: m.castle.to,
+              piece: Piece.deserialize(m.castle.piece),
+            }
+          : undefined,
+      }
+    })
+
+    game._board = Array.from(Array(8), () => new Array(8))
+
+    for (let row = 0; row < 8; row++) {
+      for (let col = 0; col < 8; col++) {
+        const sqr = objBoard[row][col]
+        game._board[row][col] = !sqr ? null : Piece.deserialize(sqr)
+      }
+    }
+
+    return game
   }
 }

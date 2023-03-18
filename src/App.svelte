@@ -23,9 +23,9 @@
     COLOR_SCHEME,
     SHOW_SIGN_IN_MODAL,
     SIGN_OUT_USER,
-    SHOW_NON_DISRUPTIVE_POPUP,
-    IS_CHECKMATE,
+    SHOW_GAMEOVER_MODAL,
     SHOW_PROMOTION_MODAL,
+    SHOW_NON_DISRUPTIVE_POPUP,
   } from './stores'
 
   import {
@@ -80,7 +80,9 @@
 
   STATE.subscribe(value => {
     if (value === 'loadgame') {
-      //CURRENT_GAME.set(copyGame($pendingGameToLoad))
+      console.log($pendingGameToLoad)
+
+      CURRENT_GAME.set($pendingGameToLoad ?? applyGameSettings(new Game()))
     }
 
     if (value === 'newgame') {
@@ -127,7 +129,7 @@
     promotionModalShouldBeVisible = val[0]
   })
 
-  IS_CHECKMATE.subscribe(val => {
+  SHOW_GAMEOVER_MODAL.subscribe(val => {
     gameOverModalShouldBeVisible = val
   })
 
