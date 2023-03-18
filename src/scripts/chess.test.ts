@@ -487,6 +487,22 @@ describe(Game, () => {
       expect(b1move?.move.capture).toBeFalsy()
     })
 
+    test('king mysteriously disappears', () => {
+      const g = new Game()
+
+      move(g, 'a2', 'a4')
+      move(g, 'g8', 'f6')
+      move(g, 'a1', 'a3')
+
+      ascii(g)
+
+      move(g, 'h7', 'h5')
+
+      expect(g.pieceAt('e8')?.name).toEqual('king')
+
+      ascii(g)
+    })
+
     test('play a game', () => {
       const g = new Game().setGameType('computer').setComputerColor('black')
 
@@ -586,8 +602,6 @@ describe(Game, () => {
       // white's turn again
 
       const whiteMoves = g.possibleMoves('white')
-
-      ascii(g)
     })
   })
 

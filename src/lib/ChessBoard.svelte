@@ -108,7 +108,9 @@
       ])
 
       selectedPromotionPiece.subscribe(name => {
-        if (typeof name !== 'string' || !move.promote) return
+        if (typeof name !== 'string' || !move.promote) return clearLocations()
+
+        console.log(name, move)
 
         move.promote(name)
         handleMoveCleanup()

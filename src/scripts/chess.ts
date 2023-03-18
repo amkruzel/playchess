@@ -254,7 +254,7 @@ export const makeComputerMove = (g: Game): Maybe<Move> => {
   let finalMove: Maybe<Move> = null
 
   // make sure it is the computer's turn
-  if (info[info.currentPlayer] !== 'computer') return null
+  if (!g.isComputerMove) return null
 
   // get all piece locations
   const moves = g.possibleMoves(info.currentPlayer)
@@ -275,11 +275,11 @@ export const makeComputerMove = (g: Game): Maybe<Move> => {
 
   if (afterMoveObj) {
     finalMove = afterMoveObj.promote
-      ? (finalMove = afterMoveObj.promote(randomPromotionPiece()))
+      ? afterMoveObj.promote(randomPromotionPiece())
       : afterMoveObj.move
   }
 
-  if (finalMove) g.cleanup()
+  g.cleanup()
 
   return finalMove
 }
@@ -792,12 +792,8 @@ export class Game {
     const otherColorPieces = this.pieces(color === 'white' ? 'black' : 'white')
 
     for (const piece of otherColorPieces) {
-      const moves = piece.moves
-      if (moves.includes(loc)) {
-        if (
-          moves.filter(loc => this._isMoveUnobstructed(piece, loc)).length > 0
-        )
-          return true
+      if (piece.moves.includes(loc)) {
+        if (this._isMoveUnobstructed(piece, loc)) return true
       }
     }
     return false
