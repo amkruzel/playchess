@@ -1,10 +1,10 @@
 <script lang="ts">
-  import { setColorScheme } from "../../common";
-  import { currentUser } from "../../pocketbase";
-  import { SHOW_SIGN_IN_MODAL, SIGN_OUT_USER } from "../../stores";
-  import { currentMenu } from "./stores";
+  import { setColorScheme } from '../../common'
+  import { currentUser } from '../../pocketbase'
+  import { SHOW_SIGN_IN_MODAL, SIGN_OUT_USER, CURRENT_GAME } from '../../stores'
+  import { currentMenu } from './stores'
 
-  export let text:string = ''
+  export let text: string = ''
 
   function handleClick() {
     if ($currentMenu === null || $currentMenu === 'default') {
@@ -17,6 +17,8 @@
       if (text.endsWith('mode')) handleColorSchemeClick()
 
       if (text === 'Friends') currentMenu.set('friends')
+
+      if (text === 'Debug') console.log($CURRENT_GAME)
     }
 
     if ($currentMenu === 'profile') {
@@ -32,17 +34,18 @@
     }
   }
 
-  function handleColorSchemeClick() { setColorScheme() }
-
+  function handleColorSchemeClick() {
+    setColorScheme()
+  }
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <div on:click={handleClick}>
-  <slot name="leftIcon"></slot>
-  
+  <slot name="leftIcon" />
+
   <p>{text}</p>
 
-  <slot name="rightIcon"></slot>
+  <slot name="rightIcon" />
 </div>
 
 <style>

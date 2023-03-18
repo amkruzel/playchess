@@ -710,7 +710,7 @@ export class Game {
     }[]
   > {
     const moves = filterNullsFromList(
-      this.pieces(color).map(p => this.validMoves(p.location))
+      this._pieceLocations(color).map(l => this.validMoves(l))
     )
 
     return moves.length === 0 ? null : moves
@@ -820,8 +820,11 @@ export class Game {
       const [fromRow, fromCol] = algebraicToNum(from)
       const [toRow, toCol] = algebraicToNum(to)
 
-      return this.lastMove.bigPawnMove
-        ? this.pieceAt(numToAlgebraic([fromRow, toCol]))
+      const enPassantCaptureLocation = numToAlgebraic([fromRow, toCol])
+
+      return this.lastMove.bigPawnMove &&
+        this.lastMove.to === enPassantCaptureLocation
+        ? this.pieceAt(enPassantCaptureLocation)
         : toPiece
     }
     return toPiece
@@ -1163,6 +1166,10 @@ export class Game {
     return this._isKingCapturable(color)
   }
 
+  private _pieceLocations(color: color): location[] {
+    return this.pieces(color).map(p => p.location)
+  }
+
   /********************
    *                  *
    *  Impure methods  *
@@ -1217,7 +1224,9 @@ export class Game {
   private _undoMove() {
     if (this._previousMoves.length === 0) return
 
-    const move = this.popLastMove as Move
+    const move = this.popLastMove
+
+    if (!move) return
 
     const { piece, capture, castle } = move
 

@@ -424,8 +424,6 @@ describe(Game, () => {
 
       g.cleanup()
 
-      ascii(g)
-
       expect(g.info.currentPlayer).toEqual('white')
 
       expect(g.pieceAt('c4')?.moves).toHaveLength(3)
@@ -464,8 +462,6 @@ describe(Game, () => {
 
       g.cleanup()
 
-      ascii(g)
-
       expect(g.info.currentPlayer).toEqual('black')
       expect(g.pieceAt('a8')?.name).toEqual('rook')
     })
@@ -482,15 +478,11 @@ describe(Game, () => {
       //move(g, 'c2', 'c4')
       fullMove(g, 'd7', 'd5')
 
-      ascii(g)
-
       const b1 = g.validMoves('b1')
 
       const b1move = b1?.makeMove(
         b1.moves[b1.moves.findIndex(m => m.to === 'c3')]
       )
-
-      console.log(b1move)
 
       expect(b1move?.move.capture).toBeFalsy()
     })
@@ -525,8 +517,6 @@ describe(Game, () => {
       g.cleanup()
 
       makeComputerMove(g)
-
-      //ascii(g)
     })
   })
 
@@ -579,6 +569,25 @@ describe(Game, () => {
 
         expect(g.validMoves('a2')).toBeNull()
       })
+    })
+
+    test('piece being removed mysteriously', () => {
+      const g = new Game()
+
+      const c2 = g.validMoves('c2')
+
+      c2?.makeMove(c2.moves[c2.moves.findIndex(m => m.to === 'c4')])
+
+      g.cleanup()
+
+      //move(g, 'c2', 'c4')
+      fullMove(g, 'd7', 'd5')
+
+      // white's turn again
+
+      const whiteMoves = g.possibleMoves('white')
+
+      ascii(g)
     })
   })
 
