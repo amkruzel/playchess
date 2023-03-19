@@ -83,9 +83,8 @@
                 ? 'active'
                 : ''}"
             >
-              {console.log(game)}
               <div>
-                Started on {'TODO'}
+                Started on {game.info.date?.toLocaleDateString()}
               </div>
               <div>Playing as {game.info.playerColor}</div>
               <div>It is {game.info.currentPlayer} player's turn</div>

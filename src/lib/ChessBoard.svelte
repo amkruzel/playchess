@@ -154,10 +154,11 @@
 <style>
   article {
     grid-column: span 2;
+    margin: none !important;
   }
 
   .board-container {
-    padding: 50px;
+    padding: 20px;
     width: 620px;
     justify-content: center;
     align-self: start;

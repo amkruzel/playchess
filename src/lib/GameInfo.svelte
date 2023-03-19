@@ -48,7 +48,7 @@
 <style>
   article {
     min-width: 330px;
-    max-height: 660px;
+    max-height: 630px;
   }
 
   hgroup {

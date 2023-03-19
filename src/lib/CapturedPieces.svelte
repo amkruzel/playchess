@@ -1,22 +1,19 @@
 <script lang="ts">
   import { CURRENT_GAME } from '../stores'
-  //import Piece from "./ChessBoard/Piece.svelte";
+  import ChessPiece from './ChessBoard/ChessPiece.svelte'
 
-  $: moves = $CURRENT_GAME.info.previousMoves
+  import type { Piece, Move, color } from '../scripts/chess'
+
+  $: moves = $CURRENT_GAME.previousMoves
 
   let whiteCapturedPieces: Piece[] = []
   let blackCapturedPieces: Piece[] = []
 
-  const getPiecesOfOneColor = (moves: chessMove[], color: color): Piece[] => {
-    const piecesCaptured = moves.filter(m => m.pieceCaptured)
-    if (piecesCaptured.length === 0) return []
-    const correctColor = piecesCaptured.filter(
-      m => m.pieceCaptured.color === color
-    )
-    const realList = correctColor.map(m =>
-      copyPiece(m.pieceCaptured)
-    ) as unknown
-    return realList as Piece[]
+  const getPiecesOfOneColor = (moves: Move[], color: color): Piece[] => {
+    const capturedPieces = $CURRENT_GAME.capturedPieces
+    return capturedPieces.filter(p => p.color === color)
+    //const realList = correctColor.map(p => p.copy())
+    //return realList
   }
 
   const piecePointValue = (p: Piece) => {
@@ -56,11 +53,11 @@
       <div class="captured-pieces-container">
         <div class="white">
           {#each whiteCapturedPieces as piece}
-            <p>{piece.name}</p>
+            <ChessPiece {piece} />
           {/each}
-
+          <br />
           {#each blackCapturedPieces as piece}
-            <p>{piece.name}</p>
+            <ChessPiece {piece} />
           {/each}
         </div>
       </div>

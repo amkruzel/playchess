@@ -87,6 +87,7 @@ export type Info = {
   white?: string
   black?: string
   status: gamestatus
+  date?: Date
 }
 
 export type serializedPiece = {
@@ -1527,6 +1528,7 @@ export class Game {
       white: this._white,
       black: this._black,
       status: this._status,
+      date: this._dateStarted,
     }
   }
 
@@ -1541,6 +1543,10 @@ export class Game {
 
   get previousMoves() {
     return this._previousMoves
+  }
+
+  get capturedPieces() {
+    return this._removedPieces
   }
 
   /* Setters */

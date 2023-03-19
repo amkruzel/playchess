@@ -183,6 +183,11 @@
 </div>
 
 <style>
+  * {
+    --block-spacing-vertical: var(--spacing);
+    --block-spacing-horizontal: var(--spacing);
+  }
+
   /* Indigo Light scheme (Default) */
   /* Can be forced with data-theme="light" */
   [data-theme='light'],
