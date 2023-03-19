@@ -29,7 +29,9 @@
       >
         <ColorSchemeIcon slot="leftIcon" />
       </DropdownItem>
-      <DropdownItem text={'Debug'} />
+      {#if $currentUser?.username === 'admin'}
+        <DropdownItem text={'Debug'} />
+      {/if}
     </div>
   {:else if $currentMenu === 'profile'}
     <div

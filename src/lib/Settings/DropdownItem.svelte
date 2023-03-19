@@ -16,8 +16,6 @@
 
       if (text.endsWith('mode')) handleColorSchemeClick()
 
-      if (text === 'Friends') currentMenu.set('friends')
-
       if (text === 'Debug') console.log($CURRENT_GAME)
     }
 

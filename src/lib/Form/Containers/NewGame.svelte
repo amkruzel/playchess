@@ -29,23 +29,22 @@
     opponent.set(null)
   }
 
+  const isNameFieldValid = (name: any): boolean => {
+    if (!name || typeof name !== 'string') return false
+    return name.length >= 4 && name.length <= 20
+  }
+
   const evalForm = () => {
     let status = false
 
     if ($activeForm !== 'newgame') status = false
-
-    const isNameFieldValid = (name: any): boolean => {
-      if (!name || typeof name !== 'string') return false
-      return name.length >= 4 && name.length <= 20
-    }
 
     if ($opponent === 'computer' && color) status = true
 
     if (
       $opponent === 'player' &&
       isNameFieldValid($whitePlayerName) &&
-      isNameFieldValid($blackPlayerName) &&
-      $localOrOnline
+      isNameFieldValid($blackPlayerName)
     )
       status = true
 
@@ -93,43 +92,14 @@
     </fieldset>
 
     {#if $opponent === 'player'}
-      <fieldset in:slide out:slide class="form-item radio">
-        <legend> Do you want to play online or locally? </legend>
-        <div>
-          <input
-            bind:group={$localOrOnline}
-            on:change={evalForm}
-            type="radio"
-            name="online-or-local"
-            value="online"
-            data-online-required="true"
-            id="online"
-            disabled={currentUserHasFriends ? false : true}
-          />
-          <label for="online" id="online">Online</label>
-        </div>
-        <div>
-          <input
-            bind:group={$localOrOnline}
-            on:change={evalForm}
-            type="radio"
-            name="online-or-local"
-            value="local"
-            id="local"
-          />
-          <label for="local" id="local">Local</label>
-        </div>
-      </fieldset>
-    {/if}
-
-    {#if $localOrOnline === 'online'}
       <fieldset in:slide out:slide>
         <legend> Enter the name of each player: </legend>
         <div>
           <label for="white-name">White: </label>
           <input
             bind:value={$whitePlayerName}
-            on:change={evalForm}
+            on:input={evalForm}
+            aria-invalid={!isNameFieldValid($whitePlayerName)}
             type="text"
             name="player-color-names-white"
             id="white-name"
@@ -142,7 +112,8 @@
           <label for="black-name">Black: </label>
           <input
             bind:value={$blackPlayerName}
-            on:change={evalForm}
+            on:input={evalForm}
+            aria-invalid={!isNameFieldValid($blackPlayerName)}
             type="text"
             name="player-color-names-black"
             id="black-name"
