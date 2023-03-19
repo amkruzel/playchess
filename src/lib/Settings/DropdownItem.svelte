@@ -28,10 +28,6 @@
         currentMenu.set('default')
       }
     }
-
-    if ($currentMenu === 'friends') {
-      if (text === '') currentMenu.set('default')
-    }
   }
 
   function handleColorSchemeClick() {
