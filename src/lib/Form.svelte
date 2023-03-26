@@ -1,21 +1,19 @@
 <script lang="ts">
-  import { slide } from "svelte/transition"
+  import { slide } from 'svelte/transition'
 
-  import NewLoadButton from "./Form/NewLoadButton.svelte"
-  import BeginButton from "./Form/BeginButton.svelte"
-  import FormsContainer from "./Form/Container.svelte";
-  
+  import NewLoadButton from './Form/NewLoadButton.svelte'
+  import BeginButton from './Form/BeginButton.svelte'
+  import Container from './Form/Container.svelte'
+
   let isFormValid: boolean
 </script>
 
-
 <article class="empty-page-form-container">
   <NewLoadButton />
-  
-  <FormsContainer bind:isFormValid />
+
+  <Container bind:isFormValid />
 
   <BeginButton {isFormValid} />
-  
 </article>
 
 <style>
@@ -27,5 +25,4 @@
 
     transition: all 500ms;
   }
-
 </style>
