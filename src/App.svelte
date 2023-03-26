@@ -156,7 +156,9 @@
 <Header />
 
 {#if loginModalShouldBeVisible} <Login bind:loginModalShouldBeVisible /> {/if}
-{#if gameOverModalShouldBeVisible} <GameOver /> {/if}
+{#if gameOverModalShouldBeVisible}
+  <GameOver bind:gameOverModalShouldBeVisible />
+{/if}
 {#if promotionModalShouldBeVisible}
   <PiecePromotion color={pieceColor} {location} />
 {/if}
