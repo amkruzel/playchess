@@ -55,8 +55,9 @@
   let nonDisruptivePopupMessages: string[] = []
 
   function applyGameSettings(g: Game): Game {
+    g.setGameType('computer')
+
     if ($localOrOnline) g.setOnlineOrLocal($localOrOnline)
-    if ($opponent) g.setGameType($opponent)
     if ($color) g.setPlayerViewColor($color)
     if ($opponent === 'computer')
       g.setComputerColor($color === 'white' ? 'black' : 'white')
@@ -80,8 +81,6 @@
 
   STATE.subscribe(value => {
     if (value === 'loadgame') {
-      console.log($pendingGameToLoad)
-
       CURRENT_GAME.set($pendingGameToLoad ?? applyGameSettings(new Game()))
     }
 

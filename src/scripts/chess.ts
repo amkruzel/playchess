@@ -230,8 +230,6 @@ export const makeComputerMove = (g: Game): Maybe<Move> => {
   // get all piece locations
   const moves = g.possibleMoves(info.currentPlayer)
 
-  if (g.info.currentPlayer === 'white') console.log(moves)
-
   if (!moves) return null
 
   // get the validMoves for one location
@@ -1144,7 +1142,7 @@ export class Game {
   private isCheckmate(color: color): boolean {
     if (this._currentPlayerColor !== color) return false
 
-    return this._isKingCapturable(color)
+    return !this.possibleMoves(color)
   }
 
   private _pieceLocations(color: color): location[] {
