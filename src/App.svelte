@@ -1,7 +1,7 @@
 <script lang="ts">
   import '@picocss/pico'
 
-  import { fade } from 'svelte/transition'
+  import { fly } from 'svelte/transition'
 
   import Header from './lib/Header.svelte'
   import Form from './lib/Form.svelte'
@@ -163,13 +163,13 @@
 
 <div class="content-container">
   {#if currentContent === 'form'}
-    <div in:fade out:fade>
+    <div out:fly={{ duration: 0 }}>
       <Form />
     </div>
   {/if}
 
   {#if currentContent.endsWith('game') && !!$CURRENT_GAME}
-    <div class="main container" in:fade out:fade>
+    <div class="main container">
       <ChessBoard game={$CURRENT_GAME} />
       <GameInfo />
       <CapturedPieces />

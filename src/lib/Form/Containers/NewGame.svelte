@@ -36,12 +36,12 @@
 
 {#if $activeForm === 'newgame'}
   <form
-    in:fly|local={{ x: -200 }}
-    out:fly|local={{ x: -200 }}
+    in:fly={{ x: -200 }}
+    out:fly={{ x: -200 }}
     class="new-game-form"
     data-name="newgameform"
   >
-    <fieldset in:slide out:slide class="form-item radio">
+    <fieldset in:slide out:slide|local class="form-item radio">
       <legend> What color do you want to be? </legend>
       <div>
         <input

@@ -60,11 +60,7 @@
 </script>
 
 {#if $activeForm === 'loadgame'}
-  <div
-    in:fly|local={{ x: 200 }}
-    out:fly|local={{ x: 200 }}
-    class="load-container"
-  >
+  <div in:fly={{ x: 200 }} out:fly={{ x: 200 }} class="load-container">
     {#if !$HAS_LOCAL_SAVED_GAMES}
       <div>
         <h2>

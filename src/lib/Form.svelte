@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { slide } from 'svelte/transition'
-
   import NewLoadButton from './Form/NewLoadButton.svelte'
   import BeginButton from './Form/BeginButton.svelte'
   import Container from './Form/Container.svelte'
@@ -22,7 +20,5 @@
     padding: 30px;
     margin: 80px;
     justify-self: center;
-
-    transition: all 500ms;
   }
 </style>

@@ -47,8 +47,7 @@
     />
   </header>
   <p>
-    This is a small web application where you can play chess against a computer,
-    or against a friend locally.
+    This is a small web application where you can play chess.
     <br /> <br />
     For more information, check out the
     <a
