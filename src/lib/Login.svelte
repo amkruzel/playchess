@@ -4,6 +4,9 @@
   import { fly } from 'svelte/transition'
   import { SHOW_NON_DISRUPTIVE_POPUP } from '../stores'
 
+  import type { Maybe } from '../scripts/chess'
+  import { onMount } from 'svelte'
+
   export let loginModalShouldBeVisible: boolean
 
   let username: string
@@ -12,10 +15,16 @@
   let loadingSignUp: boolean = false
   let loadingLogin: boolean = false
 
+  let modal: Maybe<Element>
+
+  onMount(() => (modal = document.querySelector('[data-modal="modal"]')))
+
   function checkToCloseModal(e) {
     const t = e.target
-    if (!t.dataset.modal || t.classList.includes('close'))
-      loginModalShouldBeVisible = !loginModalShouldBeVisible
+
+    if (modal?.contains(t) && !t.classList.contains('close')) return
+
+    loginModalShouldBeVisible = !loginModalShouldBeVisible
   }
 
   async function loginHandler() {
