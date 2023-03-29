@@ -19,6 +19,7 @@ export const HAS_LOCAL_SAVED_GAMES: Writable<boolean> = writable(
   !!localStorage.getItem('savedGames')
 )
 export const COLOR_SCHEME: Writable<Maybe<'light' | 'dark'>> = writable(null)
+export const localSavedGames: Writable<Game[]> = writable([])
 
 /* Modals */
 

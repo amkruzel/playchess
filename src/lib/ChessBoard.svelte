@@ -113,19 +113,17 @@
 
         if (typeof name !== 'string' || !move.promote) return clearLocations()
 
-        console.log(name, move)
-
         move.promote(name)
         handleMoveCleanup()
       })
     } else handleMoveCleanup()
   }
 
-  const updateAfterPieceMove = (game: Game) => {
-    CURRENT_GAME.set(game)
-    if (game.info.status === 'inactive') return SHOW_GAMEOVER_MODAL.set(true)
+  const updateAfterPieceMove = (game: Game): void => {
     clickAudio.play()
+    CURRENT_GAME.set(game)
     clearLocations()
+    if (game.info.status === 'inactive') SHOW_GAMEOVER_MODAL.set(true)
   }
 
   // This is where the computer move is played, if there is a computer

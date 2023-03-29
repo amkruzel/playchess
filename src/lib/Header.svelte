@@ -5,6 +5,7 @@
     CURRENT_GAME,
     COLOR_SCHEME,
     SHOW_NON_DISRUPTIVE_POPUP,
+    localSavedGames,
   } from '../stores'
   import { currentUser, pb } from '../pocketbase'
 
@@ -27,20 +28,18 @@
   async function tryToSaveGame(): Promise<[number | null, string]> {
     if ($CURRENT_GAME?.info.move === 1)
       return [-2, 'The game was not saved because no moves had been made.']
-    saveGameToLocalStorage()
+    await saveGameToLocalStorage()
     return await saveGameToDB()
   }
 
   /**
    * first string is a possible error message. null if there were no errors
    */
-  function saveGameToLocalStorage() {
+  async function saveGameToLocalStorage() {
     if (!$CURRENT_GAME) return
 
     // A list of the games saved in localStorage
-    const gamesList: Game[] = $HAS_LOCAL_SAVED_GAMES
-      ? JSON.parse(localStorage.getItem('savedGames') as string)
-      : []
+    const gamesList: Game[] = $localSavedGames
 
     // A list to hold the new list of games to go in localStorage, starting with the current game
     let newGamesList: Game[] = [$CURRENT_GAME]
@@ -136,7 +135,6 @@
 
     if ($STATE === 'form') {
       if (target.classList.contains('new-game')) clickFormButton('new')
-
       if (target.classList.contains('load-game')) clickFormButton('load')
     }
 
@@ -149,15 +147,18 @@
 
         // User is not logged in
         if (errCode === -1) {
-          SHOW_NON_DISRUPTIVE_POPUP.set('Game saved locally')
+          SHOW_NON_DISRUPTIVE_POPUP.set('Game saved locally.')
         }
 
         // New game - do not save
-        if (errCode === -2) SHOW_NON_DISRUPTIVE_POPUP.set(msg)
+        else if (errCode === -2) {
+          SHOW_NON_DISRUPTIVE_POPUP.set(msg)
+        }
+
         // Game successfully saved to PB
         else if (errCode === null) {
           SHOW_NON_DISRUPTIVE_POPUP.set(
-            'Previous game has been saved to user account'
+            'Previous game has been saved to user account.'
           )
         }
 

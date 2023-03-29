@@ -44,7 +44,6 @@
   import NonDisruptivePopup from './lib/NonDisruptivePopup.svelte'
   import GameOver from './lib/GameOver.svelte'
 
-  import type { Maybe } from './scripts/chess'
   import PiecePromotion from './lib/PiecePromotion.svelte'
 
   export const html = document.querySelector('html')
@@ -56,11 +55,10 @@
 
   function applyGameSettings(g: Game): Game {
     g.setGameType('computer')
+    g.setComputerColor($color === 'white' ? 'black' : 'white')
 
     if ($localOrOnline) g.setOnlineOrLocal($localOrOnline)
     if ($color) g.setPlayerViewColor($color)
-    if ($opponent === 'computer')
-      g.setComputerColor($color === 'white' ? 'black' : 'white')
     if ($whitePlayerName) g.setWhite($whitePlayerName)
     if ($blackPlayerName) g.setBlack($blackPlayerName)
 

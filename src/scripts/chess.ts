@@ -658,6 +658,8 @@ export class Game {
         this._isValidPawnMove(piece, loc)
     )
 
+    if (pieceLocations.length === 0) return null
+
     pieceLocations.forEach(loc => {
       const move = this._getMoveObject(piece, piece.location, loc)
       this._makeMove(move)
@@ -1057,6 +1059,8 @@ export class Game {
     const [newRow, newCol] = algebraicToNum(to) as coords
     const [curRow, curCol] = algebraicToNum(p.location) as coords
 
+    let ret: boolean = true
+
     // If not a king, it's not a castle
     if (p.name !== 'king') return true
 
@@ -1076,14 +1080,14 @@ export class Game {
       // this would be a king-side castle
       const kingsideRook = this.pieceAt(numToAlgebraic([curRow, 7]))
 
-      if (!kingsideRook || kingsideRook.hasBeenMoved) return false
+      if (!kingsideRook || kingsideRook.hasBeenMoved) ret = false
 
       if (
         // all squares in between must be empty
         this.pieceAt(numToAlgebraic([curRow, (curCol + 1) as idxLimit])) ||
         this.pieceAt(numToAlgebraic([curRow, (curCol + 2) as idxLimit]))
       ) {
-        return false
+        ret = false
       }
 
       if (
@@ -1096,22 +1100,19 @@ export class Game {
           p.color
         )
       ) {
-        return false
+        ret = false
       }
-    }
-
-    if (newCol < curCol) {
+    } else if (newCol < curCol) {
       // queen-side castle
       const queensideRook = this.pieceAt(numToAlgebraic([curRow, 0]))
 
-      if (!queensideRook || queensideRook.hasBeenMoved) return false
+      if (!queensideRook || queensideRook.hasBeenMoved) ret = false
 
-      // TODO -
       if (
         this.pieceAt(numToAlgebraic([curRow, (curCol - 1) as idxLimit])) ||
         this.pieceAt(numToAlgebraic([curRow, (curCol - 2) as idxLimit]))
       ) {
-        return false
+        ret = false
       }
 
       if (
@@ -1124,14 +1125,14 @@ export class Game {
           p.color
         )
       ) {
-        return false
+        ret = false
       }
     }
 
     this._board[curRow][curCol] = p
 
     // if we passed all checks then this is a valid move
-    return true
+    return ret
   }
 
   /**

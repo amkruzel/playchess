@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onDestroy } from 'svelte'
   import { slide, fly } from 'svelte/transition'
-  import { HAS_LOCAL_SAVED_GAMES } from '../../../stores'
+  import { HAS_LOCAL_SAVED_GAMES, localSavedGames } from '../../../stores'
 
   import { activeLoadGameID, pendingGameToLoad, activeForm } from '../stores'
 
@@ -34,6 +34,8 @@
   const savedGamesJSON: Game[] = savedGamesJSONSerialized.map(g =>
     Game.deserialize(g)
   )
+
+  localSavedGames.set(savedGamesJSON)
 
   function handleClick(e) {
     const gameTarget: Maybe<HTMLDivElement> = e.target
